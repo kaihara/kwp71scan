@@ -16,7 +16,7 @@ Protocols before OBD2 may have their own implementations, and it is not known ex
 
 I don't have the environment to test other models. So I don't currently intend to import code for other vehicles. First, I completed a scanner for my car ;-) sorry..
 
-With safe driving
+With safe driving!!
 
 
 # kwp71scan
@@ -37,4 +37,4 @@ OBD2以前のプロトコルは独自実装が含まれている可能性があ�
 
 わたしには他の車種をテストする環境を持っていません。ですので私は現在のところ他の車両用のコードを取り込むつもりはありません。まず私の車のスキャナを完成させてからです。ごめんなさい
 
-安全運転を
+安全運転を！！
