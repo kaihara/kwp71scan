@@ -19,6 +19,9 @@ I don't have the environment to test other models. So I don't currently intend t
 With safe driving!!
 
 
+
+
+
 # kwp71scan
 kwp 71（キーワードプロトコル71）を使用したカースキャンツール。AlfaRomeo 155用に作成しています。今のところ。
 
