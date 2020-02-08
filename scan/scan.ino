@@ -1,3 +1,110 @@
+#include <SoftwareSerial.h>
+
+int K_IN = 2;
+int K_OUT = 3;
+
+SoftwareSerial mySerial(K_IN, K_OUT, false); // RX, TX
+
+boolean initialized = false;  // 5baud init status
+byte bc = 1;                   // block counter
+
+/* Supported PIDs */
+#define ENGINE_RPM 0x0C
+#define VEHICLE_SPEED 0x0D
+#define ENGINE_COOLANT_TEMP 0x05
+#define MAF_AIRFLOW 0x10
+#define THROTTLE_POS 0x11
+
+
+
+#define EOM 0x03    // メッセージエンド
+
+
+void setup() {
+  pinMode(K_OUT, OUTPUT);
+  pinMode(K_IN, INPUT);
+
+  Serial.begin(115200);
+  mySerial.begin(4800);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  delay(3000);
+
+  //init
+  if ( !initialized ) {
+    kw_init();
+  }
+
+  //Get information
+
+}
+
+/* kw-71 init */
+void kw_init() {
+  byte b = 0;
+  byte kw1, kw2, kw3, kw4, kw5;
+
+  clear_buffer();
+  delay(1000);
+  //serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
+  //serial_rx_off();
+
+  //bitbang(0x00);
+  delay(2600); //k line should be free of traffic for at least two secconds.
+
+  // drive K line high for 300ms
+  digitalWrite(K_OUT, HIGH);
+  delay(300);
+
+  //ECU アドレス送信
+  bitbang(0x10);
+
+  // switch now to 4800 bauds
+  mySerial.begin(4800);
+  Serial.begin(115200);   //for Debug
+
+  // wait for 0x55 from the ECU (up to 300ms) ECUから0x55を待つ（最大300ms）
+  //since our time out for reading is 125ms, we will try it three times
+  byte tryc = 0;
+  while (b != 0x55 && tryc < 6) {
+    b = read_byte();
+    tryc++;
+    Serial.println("# b=" + String(b, HEX)); //DEBUG
+  }
+  if (b != 0x55) {
+    initialized = false;
+    return -1;
+  }
+  // wait for kw1 and kw2
+  kw1 = read_byte();
+  kw2 = read_byte();
+  kw3 = read_byte();
+  kw4 = read_byte();
+  kw5 = read_byte();
+
+  delay(5);
+  //response to ECU
+  if (kw2 != 0x00) {
+    send_data(kw2 ^ 0xFF);
+  }
+
+  /*
+    kw1 = read_byte();  //0Dのはず。なので、F2を送信する
+    Serial.println("r1=" + String(kw1, HEX)); //DEBUG
+    delay(5);
+    send_data(kw1 ^ 0xFF);
+
+    kw1 = read_byte();  //0Dのはず。なので、F2を送信する
+    Serial.println("r1=" + String(kw1, HEX)); //DEBUG
+    delay(5);
+    send_data(kw1 ^ 0xFF);
+  */
+
+  //recieve ECU hardware version
+  if (! rcv_data()) {
     initialized = false;
     Serial.println("H/W init fail"); //DEBUG
     clear_buffer();
