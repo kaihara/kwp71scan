@@ -16,8 +16,8 @@ byte bc = 1;                   // block counter
 #define THROTTLE_POS 0x11
 
 
-
-#define EOM 0x03    // メッセージエンド
+#define WAIT 0x0B       // wait time
+#define EOM 0x03        // メッセージエンド
 
 
 void setup() {
@@ -73,6 +73,7 @@ void kw_init() {
     b = read_byte();
     tryc++;
     Serial.println("# b=" + String(b, HEX)); //DEBUG
+    Serial.println("# 55 try =" + tryc); //DEBUG
   }
   if (b != 0x55) {
     initialized = false;
@@ -85,26 +86,14 @@ void kw_init() {
   kw4 = read_byte();
   kw5 = read_byte();
 
-  delay(5);
+  delay(WAIT);
   //response to ECU
   if (kw2 != 0x00) {
     send_data(kw2 ^ 0xFF);
   }
 
-  /*
-    kw1 = read_byte();  //0Dのはず。なので、F2を送信する
-    Serial.println("r1=" + String(kw1, HEX)); //DEBUG
-    delay(5);
-    send_data(kw1 ^ 0xFF);
-
-    kw1 = read_byte();  //0Dのはず。なので、F2を送信する
-    Serial.println("r1=" + String(kw1, HEX)); //DEBUG
-    delay(5);
-    send_data(kw1 ^ 0xFF);
-  */
-
   //recieve ECU hardware version
-  if (! rcv_data()) {
+  if (! rcv_block()) {
     initialized = false;
     Serial.println("H/W init fail"); //DEBUG
     clear_buffer();
@@ -112,7 +101,7 @@ void kw_init() {
   }
 
   //recieve ECU Software version
-  if (! rcv_data()) {
+  if (! rcv_block()) {
     initialized = false;
     Serial.println("S/W init fail"); //DEBUG
     clear_buffer();
@@ -120,7 +109,7 @@ void kw_init() {
   }
 
   //recieve ECU Software version
-  if (! rcv_data2()) {
+  if (! rcv_block()) {
     initialized = false;
     Serial.println("??? init fail"); //DEBUG
     clear_buffer();
@@ -134,14 +123,12 @@ void kw_init() {
 
 
 // データ受信を行う。
-bool rcv_data() {
+bool rcv_block() {
   byte bsize = 0x00;  //block data size
   while (mySerial.available() == 0) {}  //wait data
 
   bsize = read_byte();
-  Serial.println(mySerial.available()); //debug
-  Serial.println("bsize:" + String(bsize, HEX)); //DEBUG
-
+  delay(WAIT);
   send_data( bsize ^ 0xFF );  //return
 
   byte b[24];
@@ -158,17 +145,17 @@ bool rcv_data() {
 
   //最終0x03を受け取れていたら正常とみなす
   if ( b[(bsize-1)] == EOM ) {
-    Serial.println("rcv_data true"); //DEBUG
+    Serial.println("rcv_block true"); //DEBUG
     bc = b[0];
     send_ack();
     return true;
   }
-  Serial.println("rcv_data false"); //DEBUG
+  Serial.println("rcv_block false"); //DEBUG
   return false;
 }
 
 // データ受信を行う。
-bool rcv_data2() {
+bool rcv_block2() {
   byte bsize = 0x00;  //block data size
   while (mySerial.available() == 0) {}  //wait data
 
@@ -192,12 +179,12 @@ bool rcv_data2() {
 
   //最終0x03を受け取れていたら正常とみなす
   if ( b[(bsize-1)] == EOM ) {
-    Serial.println("rcv_data true"); //DEBUG
+    Serial.println("rcv_block true"); //DEBUG
     bc = b[0];
     send_ack();
     return true;
   }
-  Serial.println("rcv_data false"); //DEBUG
+  Serial.println("rcv_block false"); //DEBUG
   return false;
 }
 
@@ -235,12 +222,10 @@ void bitbang(byte b) {
     }
     delay(200);
   }
-  // stop bit + 60 ms delay
+  // stop bit + 190 ms delay
   digitalWrite(K_OUT, HIGH);
   delay(390);
 }
-
-
 
 void serial_rx_off() {
   UCSR0B &= ~(_BV(RXEN0));  //disable UART RX
@@ -255,8 +240,8 @@ void serial_rx_on() {
   mySerial.begin(4800);   //setting enable bit didn't work, so do beginSerial
 }
 
-int read_byte() {
-  int b;
+byte read_byte() {
+  byte b;
   byte t = 0;
   while (t != 125  && (b = mySerial.read()) == -1) {
     delay(1);
@@ -290,46 +275,6 @@ int read_byte_ff() {
 void send_data(byte b) {
   serial_rx_off();
   mySerial.write(b);
-  delay(12);    // ISO requires 5-20 ms delay between bytes.
+  delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
   serial_rx_on();
-}
-
-void requestPID(byte pid)
-{
-  /*
-    Byte   0: Message Header 1... 0x68
-           1: Message header 2... 0x6A for OBDI-II request
-           2: Source address ... 0xF1 for off-board tool
-           3-9: Data
-             with  3: 0x01, get PID
-                   4: pid in hex
-           Final: checksum
-  */
-  byte message[6];
-  message[0] = 0x68;
-  message[1] = 0x6A;
-  message[2] = 0xF1;
-  message[3] = 0x01;
-  message[4] = pid;
-  message[5] = iso_checksum(message, 5);
-
-  // write message to ECU
-  for (int i = 0; i < 6; i++)
-  {
-    send_data(message[i]);
-    Serial.println(message[i]);
-  }
-}
-
-// inspired by SternOBDII\code\checksum.c
-byte iso_checksum(byte *message, byte index)
-{
-  byte i;
-  byte crc;
-
-  crc = 0;
-  for (i = 0; i < index; i++)
-    crc = crc + message[i];
-
-  return crc;
 }
