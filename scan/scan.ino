@@ -135,17 +135,14 @@ bool rcv_block() {
   for (byte i = 0; i < bsize; i++) {
     b[i] = read_byte();
 
-    Serial.println("b:" + i); //DEBUG
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
-    //if ( i < bsize ){
       send_data( b[i] ^ 0xFF );
     }
   }
 
   //最終0x03を受け取れていたら正常とみなす
-  if ( b[(bsize-1)] == EOM ) {
-    Serial.println("rcv_block true"); //DEBUG
+  if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
     return true;
@@ -153,41 +150,6 @@ bool rcv_block() {
   Serial.println("rcv_block false"); //DEBUG
   return false;
 }
-
-// データ受信を行う。
-bool rcv_block2() {
-  byte bsize = 0x00;  //block data size
-  while (mySerial.available() == 0) {}  //wait data
-
-  bsize = read_byte();
-  Serial.println(mySerial.available()); //debug
-  Serial.println("bsize:" + String(bsize, HEX)); //DEBUG
-
-  send_data( bsize ^ 0xFF );  //return
-
-  byte b[24];
-  for (byte i = 0; i < bsize; i++) {
-    b[i] = read_byte();
-
-    Serial.println("b:" + i); //DEBUG
-    //03 = last は返信しない
-    if ( i != (bsize - 1) ) {
-    //if ( i < bsize ){
-      send_data( b[i] ^ 0xFF );
-    }
-  }
-
-  //最終0x03を受け取れていたら正常とみなす
-  if ( b[(bsize-1)] == EOM ) {
-    Serial.println("rcv_block true"); //DEBUG
-    bc = b[0];
-    send_ack();
-    return true;
-  }
-  Serial.println("rcv_block false"); //DEBUG
-  return false;
-}
-
 
 void send_ack() {
   send_data( 0x03 );
@@ -204,7 +166,7 @@ void clear_buffer() {
   Serial.println(mySerial.available()); //debug
   while (mySerial.available() > 0) {
     b = mySerial.read();
-    Serial.println("g " + String(b, HEX)); //DEBUG
+    Serial.println("clear: " + b); //DEBUG
   }
 }
 
@@ -241,33 +203,19 @@ void serial_rx_on() {
 }
 
 byte read_byte() {
-  byte b;
+  byte b = -1;
   byte t = 0;
   while (t != 125  && (b = mySerial.read()) == -1) {
     delay(1);
     t++;
   }
   if (t >= 125) {
-    Serial.println("r t/o 125ms"); //DEBUG
+//    Serial.println("r t/o 125ms"); //DEBUG
     b = 0;
   }
   if ( b == 0xFF) {
-    Serial.println("readbyte ff "); //DEBUG
+    Serial.println("readbyte " + b); //DEBUG
     b = read_byte();
-  }
-  return b;
-}
-
-int read_byte_ff() {
-  int b;
-  byte t = 0;
-  while (t != 125  && (b = mySerial.read()) == -1) {
-    delay(1);
-    t++;
-  }
-  if (t >= 125) {
-    Serial.println("r t/o 125ms"); //DEBUG
-    b = 0;
   }
   return b;
 }
