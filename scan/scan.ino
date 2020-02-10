@@ -24,9 +24,11 @@ void setup() {
   pinMode(K_OUT, OUTPUT);
   pinMode(K_IN, INPUT);
 
+  // Wake up DIAG unit
+  wake_up();
+  
   Serial.begin(115200);
   mySerial.begin(4800);
-
 }
 
 void loop() {
@@ -49,8 +51,8 @@ void kw_init() {
 
   clear_buffer();
   delay(1000);
-  //serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
-  //serial_rx_off();
+  serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
+  serial_rx_off();
 
   //bitbang(0x00);
   delay(2600); //k line should be free of traffic for at least two secconds.
@@ -89,7 +91,7 @@ void kw_init() {
   delay(WAIT);
   //response to ECU
   if (kw2 != 0x00) {
-    send_data(kw2 ^ 0xFF);
+    send_byte(kw2 ^ 0xFF);
   }
 
   //recieve ECU hardware version
@@ -122,6 +124,8 @@ void kw_init() {
 }
 
 
+
+
 // データ受信を行う。
 bool rcv_block() {
   byte bsize = 0x00;  //block data size
@@ -129,7 +133,7 @@ bool rcv_block() {
 
   bsize = read_byte();
   delay(WAIT);
-  send_data( bsize ^ 0xFF );  //return
+  send_byte( bsize ^ 0xFF );  //return
 
   byte b[24];
   for (byte i = 0; i < bsize; i++) {
@@ -137,7 +141,7 @@ bool rcv_block() {
 
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
-      send_data( b[i] ^ 0xFF );
+      send_byte( b[i] ^ 0xFF );
     }
   }
 
@@ -152,13 +156,13 @@ bool rcv_block() {
 }
 
 void send_ack() {
-  send_data( 0x03 );
+  send_byte( 0x03 );
   read_byte();
-  send_data( bc + 1 );
+  send_byte( bc + 1 );
   read_byte();
-  send_data( 0x09 );
+  send_byte( 0x09 );
   read_byte();
-  send_data( 0x03 );
+  send_byte( 0x03 );
 }
 
 void clear_buffer() {
@@ -210,7 +214,7 @@ byte read_byte() {
     t++;
   }
   if (t >= 125) {
-//    Serial.println("r t/o 125ms"); //DEBUG
+    //    Serial.println("r t/o 125ms"); //DEBUG
     b = 0;
   }
   if ( b == 0xFF) {
@@ -220,9 +224,20 @@ byte read_byte() {
   return b;
 }
 
-void send_data(byte b) {
+void send_byte(byte b) {
   serial_rx_off();
   mySerial.write(b);
   delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
   serial_rx_on();
+}
+
+void wake_up() {
+  serial_tx_off();
+  serial_rx_off();
+  //リレーオンルーチン
+  digitalWrite(K_OUT, LOW);
+  delay(1800);
+  // stop bit + 60 ms delay
+  digitalWrite(K_OUT, HIGH);
+  delay(260);
 }
