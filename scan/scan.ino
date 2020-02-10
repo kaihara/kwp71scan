@@ -17,6 +17,7 @@ byte bc = 1;                   // block counter
 
 
 #define WAIT 0x0B       // wait time
+#define TIME_OUT 1000   // loop time out
 #define EOM 0x03        // メッセージエンド
 
 
@@ -24,14 +25,15 @@ void setup() {
   pinMode(K_OUT, OUTPUT);
   pinMode(K_IN, INPUT);
 
-  // Wake up DIAG unit
-  wake_up();
-  
   Serial.begin(115200);
   mySerial.begin(4800);
 }
 
 void loop() {
+  delay(1000);
+  // Wake up DIAG unit
+  wake_up();
+  
   // put your main code here, to run repeatedly:
   delay(3000);
 
@@ -50,11 +52,9 @@ void kw_init() {
   byte kw1, kw2, kw3, kw4, kw5;
 
   clear_buffer();
-  delay(1000);
-  serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
-  serial_rx_off();
+  //  serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
+  //  serial_rx_off();
 
-  //bitbang(0x00);
   delay(2600); //k line should be free of traffic for at least two secconds.
 
   // drive K line high for 300ms
@@ -74,8 +74,8 @@ void kw_init() {
   while (b != 0x55 && tryc < 6) {
     b = read_byte();
     tryc++;
-    Serial.println("# b=" + String(b, HEX)); //DEBUG
-    Serial.println("# 55 try =" + tryc); //DEBUG
+    //    Serial.println("# b=" + String(b, HEX)); //DEBUG
+    //    Serial.println("# 55 try =" + tryc); //DEBUG
   }
   if (b != 0x55) {
     initialized = false;
@@ -129,11 +129,16 @@ void kw_init() {
 // データ受信を行う。
 bool rcv_block() {
   byte bsize = 0x00;  //block data size
-  while (mySerial.available() == 0) {}  //wait data
+  byte t = 0;
+  while (t != TIME_OUT  && (mySerial.available() == 0)) {  //wait data
+    delay(1);
+    t++;
+  }
 
+  // In kw-71, the first byte of block data is the number of data bytes
   bsize = read_byte();
   delay(WAIT);
-  send_byte( bsize ^ 0xFF );  //return
+  send_byte( bsize ^ 0xFF );  //return byte
 
   byte b[24];
   for (byte i = 0; i < bsize; i++) {
@@ -141,16 +146,18 @@ bool rcv_block() {
 
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
+      delay(WAIT);
       send_byte( b[i] ^ 0xFF );
     }
   }
 
   //最終0x03を受け取れていたら正常とみなす
-  if ( b[(bsize - 1)] == EOM ) {
+  if( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
     return true;
   }
+
   Serial.println("rcv_block false"); //DEBUG
   return false;
 }
@@ -204,10 +211,11 @@ void serial_tx_off() {
 
 void serial_rx_on() {
   mySerial.begin(4800);   //setting enable bit didn't work, so do beginSerial
+  Serial.begin(115200);
 }
 
-byte read_byte() {
-  byte b = -1;
+int read_byte() {
+  int b = -1;
   byte t = 0;
   while (t != 125  && (b = mySerial.read()) == -1) {
     delay(1);
@@ -218,7 +226,7 @@ byte read_byte() {
     b = 0;
   }
   if ( b == 0xFF) {
-    Serial.println("readbyte " + b); //DEBUG
+    Serial.println("readbyte " + String(b, HEX)); //DEBUG
     b = read_byte();
   }
   return b;
@@ -234,7 +242,9 @@ void send_byte(byte b) {
 void wake_up() {
   serial_tx_off();
   serial_rx_off();
-  //リレーオンルーチン
+  // drive K line high for 300ms
+  digitalWrite(K_OUT, HIGH);
+  delay(300);
   digitalWrite(K_OUT, LOW);
   delay(1800);
   // stop bit + 60 ms delay
