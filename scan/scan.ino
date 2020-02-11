@@ -27,6 +27,9 @@ void setup() {
 
   Serial.begin(115200);
   mySerial.begin(4800);
+
+  //clear rx buffer
+  clear_buffer();
 }
 
 void loop() {
@@ -61,7 +64,7 @@ void kw_init() {
   digitalWrite(K_OUT, HIGH);
   delay(300);
 
-  //ECU アドレス送信
+  //send Motronic address(0x10)
   bitbang(0x10);
 
   // switch now to 4800 bauds
@@ -155,6 +158,7 @@ bool rcv_block() {
   if( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
+  Serial.println("rcv_block true"); //DEBUG
     return true;
   }
 
@@ -229,6 +233,7 @@ int read_byte() {
     Serial.println("readbyte " + String(b, HEX)); //DEBUG
     b = read_byte();
   }
+  Serial.println("b:" + String(b, HEX)); //DEBUG
   return b;
 }
 
