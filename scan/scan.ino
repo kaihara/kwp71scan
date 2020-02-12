@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
-int K_IN = 2;
-int K_OUT = 3;
+const int K_IN = 2;
+const int K_OUT = 3;
 
 SoftwareSerial mySerial(K_IN, K_OUT, false); // RX, TX
 
@@ -16,10 +16,9 @@ byte bc = 1;                   // block counter
 #define THROTTLE_POS 0x11
 
 
-#define WAIT 0x0B       // wait time
-#define TIME_OUT 1000   // loop time out
-#define EOM 0x03        // メッセージエンド
-
+const byte WAIT = 8;        // wait time
+const int TIME_OUT = 1000;  // loop time out
+const byte EOM = 3;         // end of block data
 
 void setup() {
   pinMode(K_OUT, OUTPUT);
