@@ -39,6 +39,7 @@ void loop() {
 
   //init
   if ( !initialized ) {
+    bc = 1; //reset block counter
     kw_init();
   }
 
