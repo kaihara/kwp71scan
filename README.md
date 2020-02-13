@@ -12,7 +12,7 @@ Eventually the kpw71scan will be connected to the LCD and mounted on the vehicle
 # About correspondence to other vehicles
 Tested with 155 16V and V6 ECU and immobilizer units.
 
-If you have a 90s Motronic vehicle with a Fiat / Alfa 3pin diagnostic connector, you may be able to use this program as is.
+If you have a 90s Motronic ecu vehicle with a Fiat / Alfa 3pin diagnostic connector, you may be able to use this program as is.
 
 Protocols before OBD2 may have their own implementations, and it is not known exactly whether kwp71 will work unless tested on a real device.
 
@@ -36,7 +36,7 @@ ArduinoとL9637Dを使って、ECUおよびイモビライザーユニットと�
 # 他の車両への対応について
 155の16VとV6のECUとイモビライザーユニットでテストを行っています。
 
-Fiat/Alfa 3pin 診断コネクターを持つ90年代のモトロニック搭載車両であれば、ここのプログラムがそのまま使用できる可能性があるかもしれません。
+Fiat/Alfa 3pin 診断コネクターを持つ90年代のモトロニックECU搭載車両であれば、ここのプログラムがそのまま使用できる可能性があるかもしれません。
 
 OBD2以前のプロトコルは独自実装が含まれていることが多く、kwp71であっても実機でテストしてみないと動作するかは分かりません。
 
