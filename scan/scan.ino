@@ -51,7 +51,7 @@ void loop() {
 
 /* kw-71 init */
 void kw_init() {
-  byte b = 0;
+  int b = 0;
   byte kw1, kw2, kw3, kw4, kw5;
 
   clear_buffer();
@@ -77,8 +77,6 @@ void kw_init() {
   while (b != 0x55 && tryc < 6) {
     b = read_byte();
     tryc++;
-    //    Serial.println("# b=" + String(b, HEX)); //DEBUG
-    //    Serial.println("# 55 try =" + tryc); //DEBUG
   }
   if (b != 0x55) {
     initialized = false;
@@ -149,7 +147,6 @@ bool rcv_block() {
 
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
-      delay(WAIT);
       send_byte( b[i] ^ 0xFF );
     }
   }
@@ -199,13 +196,14 @@ void bitbang(byte b) {
     }
     delay(200);
   }
-  // stop bit + 190 ms delay
+  // stop bit(200ms) + 190 ms delay
   digitalWrite(K_OUT, HIGH);
   delay(390);
 }
 
 void serial_rx_off() {
   UCSR0B &= ~(_BV(RXEN0));  //disable UART RX
+  delay(15);                 //allow time for buffers to flush
 }
 
 void serial_tx_off() {
@@ -225,12 +223,11 @@ int read_byte() {
     delay(1);
     t++;
   }
-  if (t >= 125) {
-    //    Serial.println("r t/o 125ms"); //DEBUG
+  if (t >= 125) { //Read Time Out
     b = 0;
   }
   if ( b == 0xFF) {
-    Serial.println("readbyte " + String(b, HEX)); //DEBUG
+    Serial.println("read_byte " + String(b, HEX)); //DEBUG
     b = read_byte();
   }
   Serial.println("b:" + String(b, HEX)); //DEBUG
