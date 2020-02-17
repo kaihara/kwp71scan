@@ -127,7 +127,7 @@ void kw_init() {
 
 
 
-// データ受信を行う。
+//Recieve block data.
 bool rcv_block() {
   byte bsize = 0x00;  //block data size
   byte t = 0;
@@ -151,7 +151,7 @@ bool rcv_block() {
     }
   }
 
-  //最終0x03を受け取れていたら正常とみなす
+  //When receiving 0x03 at the end, block reception is regarded as normal end
   if( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
