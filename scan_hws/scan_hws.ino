@@ -1,8 +1,6 @@
 const int K_IN = 0;
 const int K_OUT = 1;
 
-SoftwareSerial Serial(K_IN, K_OUT, false); // RX, TX
-
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
 
@@ -66,7 +64,6 @@ void kw_init() {
 
   // switch now to 4800 bauds
   Serial.begin(4800);
-  Serial.begin(115200);   //for Debug
 
   // wait for 0x55 from the ECU (up to 300ms) ECUから0x55を待つ（最大300ms）
   //since our time out for reading is 125ms, we will try it three times
@@ -95,7 +92,6 @@ void kw_init() {
   //recieve ECU hardware version
   if (! rcv_block()) {
     initialized = false;
-    Serial.println("H/W init fail"); //DEBUG
     clear_buffer();
     return - 1;
   }
@@ -103,28 +99,23 @@ void kw_init() {
   //recieve ECU Software version
   if (! rcv_block()) {
     initialized = false;
-    Serial.println("S/W init fail"); //DEBUG
     clear_buffer();
     return - 1;
   }
 
-  //recieve ECU Software version
+  //Recieve ECU Software version
   if (! rcv_block()) {
     initialized = false;
-    Serial.println("??? init fail"); //DEBUG
     clear_buffer();
     return - 1;
   }
 
-  // init OK!
+  //init OK!
   initialized = false;
   return 0;
 }
 
-
-
-
-// データ受信を行う。
+//Recieve block data.
 bool rcv_block() {
   byte bsize = 0x00;  //block data size
   byte t = 0;
@@ -148,15 +139,12 @@ bool rcv_block() {
     }
   }
 
-  //最終0x03を受け取れていたら正常とみなす
+  // When receiving 03 at the end, block reception is regarded as normal end
   if( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
-  Serial.println("rcv_block true"); //DEBUG
     return true;
   }
-
-  Serial.println("rcv_block false"); //DEBUG
   return false;
 }
 
@@ -172,10 +160,8 @@ void send_ack() {
 
 void clear_buffer() {
   byte b;
-  Serial.println(Serial.available()); //debug
   while (Serial.available() > 0) {
     b = Serial.read();
-    Serial.println("clear: " + b); //DEBUG
   }
 }
 
@@ -210,7 +196,6 @@ void serial_tx_off() {
 
 void serial_rx_on() {
   Serial.begin(4800);   //setting enable bit didn't work, so do beginSerial
-  Serial.begin(115200);
 }
 
 int read_byte() {
@@ -224,10 +209,8 @@ int read_byte() {
     b = 0;
   }
   if ( b == 0xFF) {
-    Serial.println("read_byte " + String(b, HEX)); //DEBUG
     b = read_byte();
   }
-  Serial.println("b:" + String(b, HEX)); //DEBUG
   return b;
 }
 
