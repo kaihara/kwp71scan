@@ -1,8 +1,6 @@
 const int K_IN = 0;
 const int K_OUT = 1;
 
-SoftwareSerial Serial(K_IN, K_OUT, false); // RX, TX
-
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
 
