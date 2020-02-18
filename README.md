@@ -4,7 +4,7 @@
 Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.
 
 # Status
-Using Arduino and L9637D, it is made to communicate with ECU and immobilizer unit. Currently, arduino is used, but in the future it may be replaced with a microcomputer such as PIC.
+Using Arduino and L9637D, it is made to communicate with ECU and immobilizer unit. Currently, Arduino is used, but in the future it may be replaced with a microcomputer such as PIC.
 
 Currently, I have created a program that initializes the connection with the ECU. The connection result is confirmed on the Arduino serial monitor.
 Eventually the kpw71scan will be connected to the LCD and mounted on the vehicle dashboard.
@@ -28,7 +28,7 @@ With safe driving!!
 kwp 71（キーワードプロトコル71）を使用したカースキャンツール。AlfaRomeo 155用に作成しています。今のところ。
 
 # 現在の状況
-ArduinoとL9637Dを使って、ECUおよびイモビライザーユニットと通信するように作成しています。現在はarduinoを使っていますが、将来的にはPICなどのマイコンに置き換える可能性があります。
+ArduinoとL9637Dを使って、ECUおよびイモビライザーユニットと通信するように作成しています。現在はArduinoを使っていますが、将来的にはPICなどのマイコンに置き換える可能性があります。
 
 現在、ECUとの接続を初期化するところまでプログラムを作成しました。 接続結果はArduinoシリアルモニターで確認しています。
 最終的にはkpw71scanはLCDに接続し、車両のダッシュボードに取り付ける予定です。
