@@ -31,7 +31,7 @@ void loop() {
   // Wake up DIAG unit
   wake_up();
   
-  // put your main code here, to run repeatedly:
+  // Wait for ECU startup
   delay(3000);
 
   //init
