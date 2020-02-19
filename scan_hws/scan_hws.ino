@@ -186,12 +186,12 @@ void bitbang(byte b) {
 
 void serial_rx_off() {
   UCSR0B &= ~(_BV(RXEN0));  //disable UART RX
-  delay(15);                 //allow time for buffers to flush
+  delay(WAIT);                 //allow time for buffers to flush
 }
 
 void serial_tx_off() {
   UCSR0B &= ~(_BV(TXEN0));  //disable UART TX
-  delay(15);                 //allow time for buffers to flush
+  delay(WAIT);                 //allow time for buffers to flush
 }
 
 void serial_rx_on() {
@@ -208,9 +208,9 @@ int read_byte() {
   if (t >= 125) { //Read Time Out
     b = 0;
   }
-  if ( b == 0xFF) {
-    b = read_byte();
-  }
+//  if ( b == 0xFF) {
+//    b = read_byte();
+//  }
   return b;
 }
 
