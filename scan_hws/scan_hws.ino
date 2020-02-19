@@ -89,6 +89,7 @@ void kw_init() {
     send_byte(kw2 ^ 0xFF);
   }
 
+  //TODO ECUによって出力する情報回数が違うため、車種によってループ回数変更する。V6 2回、16V 4回
   //recieve ECU hardware version
   if (! rcv_block()) {
     initialized = false;
@@ -103,7 +104,14 @@ void kw_init() {
     return - 1;
   }
 
-  //Recieve ECU Software version
+  //Recieve Other information
+  if (! rcv_block()) {
+    initialized = false;
+    clear_buffer();
+    return - 1;
+  }
+
+  //Recieve Other information
   if (! rcv_block()) {
     initialized = false;
     clear_buffer();
