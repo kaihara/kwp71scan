@@ -12,9 +12,9 @@ byte bc = 1;                   // block counter
 #define THROTTLE_POS 0x11
 
 
-const byte WAIT = 8;        // wait time
+const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out
-const byte EOM = 3;         // end of block data
+const byte EOM = 0x03;      // end of block data
 
 void setup() {
   pinMode(K_OUT, OUTPUT);
