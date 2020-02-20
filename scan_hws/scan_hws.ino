@@ -32,11 +32,11 @@ void loop() {
   wake_up();
   
   // Wait for ECU startup
-  delay(3000);
+  // delay(3000);
 
   //init
   if ( !initialized ) {
-    bc = 1; //reset block counter
+    bc = 1;   // reset block counter
     kw_init();
   }
 
@@ -50,8 +50,6 @@ void kw_init() {
   byte kw1, kw2, kw3, kw4, kw5;
 
   clear_buffer();
-  //  serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
-  //  serial_rx_off();
 
   delay(2600); //k line should be free of traffic for at least two secconds.
 
