@@ -1,3 +1,7 @@
+/* Settiong parameter */
+byte NUBER_INFO_BLOCKS = 4; // Number of information blocks at initialization 155v6 -> 3 ,155 16V -> 4
+/* Settiong parameter */
+
 const int K_IN = 0;
 const int K_OUT = 1;
 
@@ -27,9 +31,9 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
+  // delay(1000);
   // Wake up DIAG unit
-  wake_up();
+  // wake_up();
   
   // Wait for ECU startup
   delay(3000);
@@ -41,7 +45,9 @@ void loop() {
   }
 
   //Get information
-
+  if (initialized) {
+    
+  }
 }
 
 /* kw-71 init */
