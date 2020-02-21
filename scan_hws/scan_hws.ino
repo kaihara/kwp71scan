@@ -211,18 +211,12 @@ void serial_rx_on() {
 }
 
 int read_byte() {
-  int b = -1;
+  int b = 0;
   byte t = 0;
   while (t != 125  && (b = Serial.read()) == -1) {
     delay(1);
     t++;
   }
-  if (t >= 125) { //Read Time Out
-    b = 0;
-  }
-//  if ( b == 0xFF) {
-//    b = read_byte();
-//  }
   return b;
 }
 
