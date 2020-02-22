@@ -123,7 +123,7 @@ void kw_init() {
   }
 
   //init OK!
-  initialized = false;
+  initialized = true;
   return 0;
 }
 
