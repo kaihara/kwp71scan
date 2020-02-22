@@ -28,25 +28,30 @@ void setup() {
 
   //clear rx buffer
   clear_buffer();
+
+  initialized = false;
 }
 
 void loop() {
   // delay(1000);
   // Wake up DIAG unit
   // wake_up();
-  
+
   // Wait for ECU startup
   // delay(3000);
 
   //init
-  if ( !initialized ) {
+  if ( initialized == false ) {
     bc = 1;   // reset block counter
     kw_init();
   }
 
   //Get information
-  if (initialized) {
-    //rcv_block();
+  if (initialized == true) {
+    if (! rcv_block()) {
+      initialized = false;
+      clear_buffer();
+    }
   }
 }
 
@@ -152,7 +157,7 @@ bool rcv_block() {
   }
 
   // When receiving 03 at the end, block reception is regarded as normal end
-  if( b[(bsize - 1)] == EOM ) {
+  if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
     return true;
