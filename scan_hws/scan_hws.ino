@@ -46,7 +46,7 @@ void loop() {
 
   //Get information
   if (initialized) {
-    
+    //rcv_block();
   }
 }
 
@@ -178,6 +178,8 @@ void clear_buffer() {
 }
 
 void bitbang(byte b) {
+  serial_tx_off();
+  serial_rx_off();
   // send byte at 5 bauds
   // start bit
   digitalWrite(K_OUT, LOW);
@@ -211,7 +213,7 @@ void serial_rx_on() {
 }
 
 int read_byte() {
-  int b = 0;
+  int b = -1;
   byte t = 0;
   while (t != 125  && (b = Serial.read()) == -1) {
     delay(1);
