@@ -20,6 +20,10 @@ const byte WAIT = 8;        // wait time.Waiting time settings may need to be fi
 const int TIME_OUT = 1000;  // loop time out
 const byte EOM = 0x03;      // end of block data
 
+/**/
+const byte ACK = 0x09;      // end of block data
+
+
 void setup() {
   pinMode(K_OUT, OUTPUT);
   pinMode(K_IN, INPUT);
@@ -56,11 +60,9 @@ void loop() {
     }
 */
     //battery v 
-    if (! rcv_block(data)) {
+    if (! rcv_block2(data)) {
       initialized = false;
       clear_buffer();
-    } else{
-      get_bat();
     }
     //delay(20);  // 50msにするとアウト
     
@@ -180,6 +182,39 @@ bool rcv_block(byte b[12]) {
   return false;
 }
 
+//Recieve block data.
+bool rcv_block2(byte b[12]) {
+  byte bsize = 0x00;  //block data size
+  byte t = 0;
+  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
+    delay(1);
+    t++;
+  }
+
+  // In kw-71, the first byte of block data is the number of data bytes
+  bsize = read_byte();
+  delay(WAIT);
+  send_byte( bsize ^ 0xFF );  //return byte
+
+  for (byte i = 0; i < bsize; i++) {
+    b[i] = read_byte();
+
+    //03 = last は返信しない
+    if ( i != (bsize - 1) ) {
+      send_byte( b[i] ^ 0xFF );
+    }
+  }
+
+  // When receiving 03 at the end, block reception is regarded as normal end
+  if ( b[(bsize - 1)] == EOM ) {
+    bc = b[0];
+    get_bat_adc();
+    return true;
+  }
+  return false;
+}
+
+
 void send_ack() {
   send_byte( 0x03 );
   read_byte();
@@ -197,9 +232,23 @@ void get_bat() {
   read_byte();
   send_byte( 0x01 );
   read_byte();
+  send_byte( 0x01 );
+  read_byte();
   send_byte( 0x00 );
   read_byte();
   send_byte( 0x36 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
+void get_bat_adc() {
+  send_byte( 0x04 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x08 );
+  read_byte();
+  send_byte( 0x01 );
   read_byte();
   send_byte( 0x03 );
 }
