@@ -1,5 +1,5 @@
 /* Settiong parameter */
-byte NUBER_INFO_BLOCKS = 4; // Number of information blocks at initialization 155v6 -> 3 ,155 16V -> 4
+byte NUBER_INFO_BLOCKS = 4; // Number of information blocks at initialization 155v6 -> 2 ,155 16V -> 4
 /* Settiong parameter */
 
 const int K_IN = 0;
@@ -113,6 +113,7 @@ void kw_init() {
     return - 1;
   }
 
+/*
   //Recieve Other information
   if (! rcv_block()) {
     initialized = false;
@@ -126,7 +127,7 @@ void kw_init() {
     clear_buffer();
     return - 1;
   }
-
+*/
   //init OK!
   initialized = true;
   return 0;
@@ -171,6 +172,20 @@ void send_ack() {
   send_byte( bc + 1 );
   read_byte();
   send_byte( 0x09 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
+void get_vat() {
+  send_byte( 0x06 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x00 );
+  read_byte();
+  send_byte( 0x36 );
   read_byte();
   send_byte( 0x03 );
 }
