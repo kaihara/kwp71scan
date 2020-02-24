@@ -39,6 +39,7 @@ void loop() {
 
   // Wait for ECU startup
   // delay(3000);
+  byte data[12];
 
   //init
   if ( initialized == false ) {
@@ -48,17 +49,30 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-    if (! rcv_block()) {
+/*
+    if (! rcv_block(data)) {
       initialized = false;
       clear_buffer();
     }
+*/
+    //battery v 
+    if (! rcv_block(data)) {
+      initialized = false;
+      clear_buffer();
+    } else{
+      get_bat();
+    }
+    //delay(20);  // 50msにするとアウト
+    
   }
+  
 }
 
 /* kw-71 init */
 void kw_init() {
   int b = 0;
   byte kw1, kw2, kw3, kw4, kw5;
+  byte data[12];
 
   clear_buffer();
 
@@ -86,6 +100,7 @@ void kw_init() {
     return -1;
   }
   // wait for kw1 and kw2
+  // TODO kw2以外不要なので消す
   kw1 = read_byte();
   kw2 = read_byte();
   kw3 = read_byte();
@@ -100,14 +115,14 @@ void kw_init() {
 
   //TODO ECUによって出力する情報回数が違うため、車種によってループ回数変更する。V6 2回、16V 4回
   //recieve ECU hardware version
-  if (! rcv_block()) {
+  if (! rcv_block(data)) {
     initialized = false;
     clear_buffer();
     return - 1;
   }
 
   //recieve ECU Software version
-  if (! rcv_block()) {
+  if (! rcv_block(data)) {
     initialized = false;
     clear_buffer();
     return - 1;
@@ -134,7 +149,7 @@ void kw_init() {
 }
 
 //Recieve block data.
-bool rcv_block() {
+bool rcv_block(byte b[12]) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
@@ -147,7 +162,6 @@ bool rcv_block() {
   delay(WAIT);
   send_byte( bsize ^ 0xFF );  //return byte
 
-  byte b[24];
   for (byte i = 0; i < bsize; i++) {
     b[i] = read_byte();
 
@@ -176,7 +190,7 @@ void send_ack() {
   send_byte( 0x03 );
 }
 
-void get_vat() {
+void get_bat() {
   send_byte( 0x06 );
   read_byte();
   send_byte( bc + 1 );
