@@ -1,3 +1,27 @@
+
+
+/*
+note:
+Engine speed
+0x01, 0x3a,"Engine speed", 1,"RPM", 1, "#scaling unsigned 1 x*40 1/min";
+
+Engine Temperature
+0x08, 0x03,"ADC 3 Water temperature", 1,"Water temperature", 1, "#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
+
+Air temperature
+0x08, 0x02,"ADC_2 airtemp sensor voltage", 1,"Tair sensor",  1,"#scaling unsigned 2 -2.01389E-05*(x**3)+0.008784722*(x**2)-1.676875*x+156.74375 Deg./C";
+
+Air quantity
+unknown
+
+Battery voltage
+0x08, 0x01,"ADC 1 Battery Voltage", 1,"Battery voltage", 1, "#scaling unsigned 2 X/14.68 Volt";
+
+Vehicle speed
+unknown
+
+*/
+
 /* Settiong parameter */
 byte NUBER_INFO_BLOCKS = 4; // Number of information blocks at initialization 155v6 -> 2 ,155 16V -> 4
 /* Settiong parameter */
