@@ -1,5 +1,18 @@
 ## :construction: Currently under development. :construction:
 
+# Progress
+Prototype
+[X] Obtaining ECU / Immo unit.
+[X] Make ECU workbench.
+[ ] Prototype production.
+[ ] In-vehicle prototype testing.
+
+Trial production
+[ ] PCB board design.
+[ ] Create Trial production.
+[ ] In-vehicle Trial product testing.
+
+
 # kwp71scan
 Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.
 
