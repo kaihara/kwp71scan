@@ -315,16 +315,3 @@ void send_byte(byte b) {
   delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
   serial_rx_on();
 }
-
-void wake_up() {
-  serial_tx_off();
-  serial_rx_off();
-  // drive K line high for 300ms
-  digitalWrite(K_OUT, HIGH);
-  delay(300);
-  digitalWrite(K_OUT, LOW);
-  delay(1800);
-  // stop bit + 60 ms delay
-  digitalWrite(K_OUT, HIGH);
-  delay(260);
-}
