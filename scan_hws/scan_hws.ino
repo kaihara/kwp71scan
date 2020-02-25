@@ -23,7 +23,7 @@ unknown
 */
 
 /* Settiong parameter */
-byte NUBER_INFO_BLOCKS = 4; // Number of information blocks at initialization 155v6 -> 2 ,155 16V -> 4
+byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155v6 -> 2 ,155 16V -> 4
 /* Settiong parameter */
 
 const int K_IN = 0;
@@ -88,7 +88,7 @@ void loop() {
       initialized = false;
       clear_buffer();
     }
-    //delay(20);  // 50msにするとアウト
+    //delay(20);  // 50msにするとアウト TODO あとで調整
     
   }
   
@@ -139,36 +139,16 @@ void kw_init() {
     send_byte(kw2 ^ 0xFF);
   }
 
-  //TODO ECUによって出力する情報回数が違うため、車種によってループ回数変更する。V6 2回、16V 4回
-  //recieve ECU hardware version
-  if (! rcv_block(data)) {
-    initialized = false;
-    clear_buffer();
-    return - 1;
+  // Receives initialization data block from ECU.
+  // Number of repetitions depends on the ECU. Eg: V6 twice, 16V four times.
+  for (byte i = 0; i < NUMBER_INFO_BLOCKS ; i++) {
+    if (! rcv_block(data)) {
+      initialized = false;
+      clear_buffer();
+      return - 1;
+    }
   }
 
-  //recieve ECU Software version
-  if (! rcv_block(data)) {
-    initialized = false;
-    clear_buffer();
-    return - 1;
-  }
-
-/*
-  //Recieve Other information
-  if (! rcv_block()) {
-    initialized = false;
-    clear_buffer();
-    return - 1;
-  }
-
-  //Recieve Other information
-  if (! rcv_block()) {
-    initialized = false;
-    clear_buffer();
-    return - 1;
-  }
-*/
   //init OK!
   initialized = true;
   return 0;
