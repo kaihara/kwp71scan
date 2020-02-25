@@ -61,10 +61,8 @@ void setup() {
 }
 
 void loop() {
+  //TODO 起動前のdelay時間 要調整 
   // delay(1000);
-  // Wake up DIAG unit
-  // wake_up();
-
   // Wait for ECU startup
   // delay(3000);
   byte data[12];
