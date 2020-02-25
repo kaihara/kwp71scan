@@ -1,4 +1,4 @@
-
+#include <LiquidCrystal.h>
 
 /*
 note:
@@ -47,6 +47,9 @@ const byte EOM = 0x03;      // end of block data
 /**/
 const byte ACK = 0x09;      // end of block data
 
+/* LCD Setting */
+LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
+
 
 void setup() {
   pinMode(K_OUT, OUTPUT);
@@ -58,6 +61,12 @@ void setup() {
   clear_buffer();
 
   initialized = false;
+
+  //LCD print
+  lcd.begin( 16, 2 );
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("INIT");
 }
 
 void loop() {
