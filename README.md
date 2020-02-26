@@ -1,5 +1,8 @@
 ## :construction: Currently under development. :construction:
 
+# kwp71scan
+Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.
+
 # Progress
 Prototype  
 [X] Obtaining ECU / Immo unit.  
@@ -11,10 +14,6 @@ Trial production
 [ ] PCB board design.  
 [ ] Create Trial production.  
 [ ] In-vehicle Trial product testing.  
-  
-  
-# kwp71scan
-Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.
 
 # Status
 Using Arduino and L9637D, it is made to communicate with ECU and immobilizer unit. Currently, Arduino is used, but in the future it may be replaced with a microcomputer such as PIC.
