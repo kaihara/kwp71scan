@@ -94,6 +94,10 @@ void loop() {
     if (! rcv_block2(data)) {
       initialized = false;
       clear_buffer();
+    } else {
+      lcd.setCursor(0, 0);
+      lcd.print("Bat:");
+      lcd.print( (data[3] * 0.0681 + 0.0019 ),2);
     }
     //delay(20);  // 50msにするとアウト TODO あとで調整
     
