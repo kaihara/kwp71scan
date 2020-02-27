@@ -1,9 +1,33 @@
-#include <SoftwareSerial.h>
+#include <LiquidCrystal.h>
 
-const int K_IN = 2;
-const int K_OUT = 3;
+/*
+note:
+Engine speed
+0x01, 0x3a,"Engine speed", 1,"RPM", 1, "#scaling unsigned 1 x*40 1/min";
 
-SoftwareSerial mySerial(K_IN, K_OUT, false); // RX, TX
+Engine Temperature
+0x08, 0x03,"ADC 3 Water temperature", 1,"Water temperature", 1, "#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
+
+Air temperature
+0x08, 0x02,"ADC_2 airtemp sensor voltage", 1,"Tair sensor",  1,"#scaling unsigned 2 -2.01389E-05*(x**3)+0.008784722*(x**2)-1.676875*x+156.74375 Deg./C";
+
+Air quantity
+unknown
+
+Battery voltage
+0x08, 0x01,"ADC 1 Battery Voltage", 1,"Battery voltage", 1, "#scaling unsigned 2 X/14.68 Volt";
+
+Vehicle speed
+unknown
+
+*/
+
+/* Settiong parameter */
+byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155v6 -> 2 ,155 16V -> 4
+/* Settiong parameter */
+
+const int K_IN = 0;
+const int K_OUT = 1;
 
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
@@ -16,47 +40,78 @@ byte bc = 1;                   // block counter
 #define THROTTLE_POS 0x11
 
 
-const byte WAIT = 8;        // wait time
+const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out
-const byte EOM = 3;         // end of block data
+const byte EOM = 0x03;      // end of block data
+
+/**/
+const byte ACK = 0x09;      // end of block data
+
+/* LCD Setting */
+LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
+
 
 void setup() {
   pinMode(K_OUT, OUTPUT);
   pinMode(K_IN, INPUT);
 
-  Serial.begin(115200);
-  mySerial.begin(4800);
+  Serial.begin(4800);
 
   //clear rx buffer
   clear_buffer();
+
+  initialized = false;
+
+  //LCD print
+  lcd.begin( 16, 2 );
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("INIT");
 }
 
 void loop() {
-  delay(1000);
-  // Wake up DIAG unit
-  wake_up();
-  
+  //TODO 起動前のdelay時間 要調整 
+  // delay(1000);
   // Wait for ECU startup
-  delay(3000);
+  // delay(3000);
+  byte data[12];
 
   //init
-  if ( !initialized ) {
-    bc = 1; //reset block counter
+  if ( initialized == false ) {
+    bc = 1;   // reset block counter
     kw_init();
   }
 
   //Get information
-
+  if (initialized == true) {
+/*
+    if (! rcv_block(data)) {
+      initialized = false;
+      clear_buffer();
+    }
+*/
+    //battery v 
+    if (! rcv_block2(data)) {
+      initialized = false;
+      clear_buffer();
+    } else {
+      lcd.setCursor(0, 0);
+      lcd.print("Bat:");
+      lcd.print( (data[3] * 0.0681 + 0.0019 ),2);
+    }
+    //delay(20);  // 50msにするとアウト TODO あとで調整
+    
+  }
+  
 }
 
 /* kw-71 init */
 void kw_init() {
   int b = 0;
   byte kw1, kw2, kw3, kw4, kw5;
+  byte data[12];
 
   clear_buffer();
-  //  serial_tx_off(); //disable UART so we can "bit-Bang" the slow init.
-  //  serial_rx_off();
 
   delay(2600); //k line should be free of traffic for at least two secconds.
 
@@ -68,8 +123,7 @@ void kw_init() {
   bitbang(0x10);
 
   // switch now to 4800 bauds
-  mySerial.begin(4800);
-  Serial.begin(115200);   //for Debug
+  Serial.begin(4800);
 
   // wait for 0x55 from the ECU (up to 300ms) ECUから0x55を待つ（最大300ms）
   //since our time out for reading is 125ms, we will try it three times
@@ -83,6 +137,7 @@ void kw_init() {
     return -1;
   }
   // wait for kw1 and kw2
+  // TODO kw2以外不要なので消す
   kw1 = read_byte();
   kw2 = read_byte();
   kw3 = read_byte();
@@ -95,43 +150,26 @@ void kw_init() {
     send_byte(kw2 ^ 0xFF);
   }
 
-  //recieve ECU hardware version
-  if (! rcv_block()) {
-    initialized = false;
-    Serial.println("H/W init fail"); //DEBUG
-    clear_buffer();
-    return - 1;
+  // Receives initialization data block from ECU.
+  // Number of repetitions depends on the ECU. Eg: V6 twice, 16V four times.
+  for (byte i = 0; i < NUMBER_INFO_BLOCKS ; i++) {
+    if (! rcv_block(data)) {
+      initialized = false;
+      clear_buffer();
+      return - 1;
+    }
   }
 
-  //recieve ECU Software version
-  if (! rcv_block()) {
-    initialized = false;
-    Serial.println("S/W init fail"); //DEBUG
-    clear_buffer();
-    return - 1;
-  }
-
-  //recieve ECU Software version
-  if (! rcv_block()) {
-    initialized = false;
-    Serial.println("??? init fail"); //DEBUG
-    clear_buffer();
-    return - 1;
-  }
-
-  // init OK!
-  initialized = false;
+  //init OK!
+  initialized = true;
   return 0;
 }
 
-
-
-
 //Recieve block data.
-bool rcv_block() {
+bool rcv_block(byte b[12]) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
-  while (t != TIME_OUT  && (mySerial.available() == 0)) {  //wait data
+  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
     delay(1);
     t++;
   }
@@ -141,7 +179,6 @@ bool rcv_block() {
   delay(WAIT);
   send_byte( bsize ^ 0xFF );  //return byte
 
-  byte b[24];
   for (byte i = 0; i < bsize; i++) {
     b[i] = read_byte();
 
@@ -151,17 +188,47 @@ bool rcv_block() {
     }
   }
 
-  //When receiving 0x03 at the end, block reception is regarded as normal end
-  if( b[(bsize - 1)] == EOM ) {
+  // When receiving 03 at the end, block reception is regarded as normal end
+  if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     send_ack();
-  Serial.println("rcv_block true"); //DEBUG
     return true;
   }
-
-  Serial.println("rcv_block false"); //DEBUG
   return false;
 }
+
+//Recieve block data.
+bool rcv_block2(byte b[12]) {
+  byte bsize = 0x00;  //block data size
+  byte t = 0;
+  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
+    delay(1);
+    t++;
+  }
+
+  // In kw-71, the first byte of block data is the number of data bytes
+  bsize = read_byte();
+  delay(WAIT);
+  send_byte( bsize ^ 0xFF );  //return byte
+
+  for (byte i = 0; i < bsize; i++) {
+    b[i] = read_byte();
+
+    //03 = last は返信しない
+    if ( i != (bsize - 1) ) {
+      send_byte( b[i] ^ 0xFF );
+    }
+  }
+
+  // When receiving 03 at the end, block reception is regarded as normal end
+  if ( b[(bsize - 1)] == EOM ) {
+    bc = b[0];
+    get_bat_adc();
+    return true;
+  }
+  return false;
+}
+
 
 void send_ack() {
   send_byte( 0x03 );
@@ -173,16 +240,44 @@ void send_ack() {
   send_byte( 0x03 );
 }
 
+void get_bat() {
+  send_byte( 0x06 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x00 );
+  read_byte();
+  send_byte( 0x36 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
+void get_bat_adc() {
+  send_byte( 0x04 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x08 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
 void clear_buffer() {
   byte b;
-  Serial.println(mySerial.available()); //debug
-  while (mySerial.available() > 0) {
-    b = mySerial.read();
-    Serial.println("clear: " + b); //DEBUG
+  while (Serial.available() > 0) {
+    b = Serial.read();
   }
 }
 
 void bitbang(byte b) {
+  serial_tx_off();
+  serial_rx_off();
   // send byte at 5 bauds
   // start bit
   digitalWrite(K_OUT, LOW);
@@ -203,53 +298,31 @@ void bitbang(byte b) {
 
 void serial_rx_off() {
   UCSR0B &= ~(_BV(RXEN0));  //disable UART RX
-  delay(15);                 //allow time for buffers to flush
+  delay(WAIT);                 //allow time for buffers to flush
 }
 
 void serial_tx_off() {
   UCSR0B &= ~(_BV(TXEN0));  //disable UART TX
-  delay(15);                 //allow time for buffers to flush
+  delay(WAIT);                 //allow time for buffers to flush
 }
 
 void serial_rx_on() {
-  mySerial.begin(4800);   //setting enable bit didn't work, so do beginSerial
-  Serial.begin(115200);
+  Serial.begin(4800);   //setting enable bit didn't work, so do beginSerial
 }
 
 int read_byte() {
   int b = -1;
   byte t = 0;
-  while (t != 125  && (b = mySerial.read()) == -1) {
+  while (t != 125  && (b = Serial.read()) == -1) {
     delay(1);
     t++;
   }
-  if (t >= 125) { //Read Time Out
-    b = 0;
-  }
-  if ( b == 0xFF) {
-    Serial.println("read_byte " + String(b, HEX)); //DEBUG
-    b = read_byte();
-  }
-  Serial.println("b:" + String(b, HEX)); //DEBUG
   return b;
 }
 
 void send_byte(byte b) {
   serial_rx_off();
-  mySerial.write(b);
+  Serial.write(b);
   delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
   serial_rx_on();
-}
-
-void wake_up() {
-  serial_tx_off();
-  serial_rx_off();
-  // drive K line high for 300ms
-  digitalWrite(K_OUT, HIGH);
-  delay(300);
-  digitalWrite(K_OUT, LOW);
-  delay(1800);
-  // stop bit + 60 ms delay
-  digitalWrite(K_OUT, HIGH);
-  delay(260);
 }
