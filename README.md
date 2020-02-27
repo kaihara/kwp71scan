@@ -8,10 +8,10 @@ Prototype
  [X] Obtaining ECU / Immo unit.  
  [X] Make ECU workbench.  
  [ ] Prototype production.  
-.  [X] Creating a prototype board.  
-.  [X] Let Arduino and ECU communicate.  
-.  [ ] Get information from ECU.  
-.  [ ] Creating an in-vehicle prototype board.  
+ + [X] Creating a prototype board.  
+ + [X] Let Arduino and ECU communicate.  
+ + [ ] Get information from ECU.  
+ + [ ] Creating an in-vehicle prototype board.  
  [ ] In-vehicle prototype testing.  
   
 Trial production  
