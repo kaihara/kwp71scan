@@ -66,7 +66,9 @@ void setup() {
   lcd.begin( 16, 2 );
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("INIT");
+  lcd.print("kwp71scan");
+  lcd.setCursor(0, 1);
+  lcd.print("Initializing....");
 }
 
 void loop() {
@@ -84,12 +86,8 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-/*
-    if (! rcv_block(data)) {
-      initialized = false;
-      clear_buffer();
-    }
-*/
+
+    //TODO 4つのzoneにわけてデータを表示する。
     //battery v 
     if (! rcv_block2(data)) {
       initialized = false;
@@ -165,7 +163,7 @@ void kw_init() {
   return 0;
 }
 
-//Recieve block data.
+// Recieve block data.
 bool rcv_block(byte b[12]) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
@@ -197,7 +195,7 @@ bool rcv_block(byte b[12]) {
   return false;
 }
 
-//Recieve block data.
+// Recieve block data.
 bool rcv_block2(byte b[12]) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
@@ -220,7 +218,7 @@ bool rcv_block2(byte b[12]) {
     }
   }
 
-  // When receiving 03 at the end, block reception is regarded as normal end
+  // When receiving 0x03 at the end, block reception is regarded as normal end.
   if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     get_bat_adc();
