@@ -66,9 +66,6 @@ void setup() {
 
   //LCD print
   lcd.begin( 16, 2 );
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Initializing");
 }
 
 void loop() {
@@ -76,32 +73,59 @@ void loop() {
   // delay(1000);
   // Wait for ECU startup
   // delay(3000);
-  byte data[12];
+  byte data1[12];
+  byte data2[12];
+  byte data3[12];
+  byte data4[12];
 
   //init
   if ( initialized == false ) {
+    lcd.setCursor(0, 0);
+    lcd.print("Initializing");
     bc = 1;   // reset block counter
     kw_init();
+    lcd.clear();
   }
 
   //Get information
   if (initialized == true) {
     //TODO 4つのzoneにわけてデータを表示する。
     //battery v
-    if (! rcv_block(data, P_BATTERY)) {
+    if (! rcv_block(data1, P_BATTERY)) {
       initialized = false;
       clear_buffer();
     } else {
       lcd.setCursor(0, 0);
-      lcd.clear();
       lcd.print("BT ");
-      lcd.print( (data[3] * 0.0681 + 0.0019 ), 1);
+      lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
     }
 
-    //0x08, 0x03,"ADC 3 Water temperature",
-    //1,"Water temperature", 1,
-    //"#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
+    if (! rcv_block(data2, P_WATER_TEMP)) {
+      initialized = false;
+      clear_buffer();
+    } else {
+      lcd.setCursor(8, 0);
+      lcd.print("WT ");
+      lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
+    }
 
+    if (! rcv_block(data3, P_BATTERY)) {
+      initialized = false;
+      clear_buffer();
+    } else {
+      lcd.setCursor(0, 1);
+      lcd.print("BT ");
+      lcd.print( (data3[3] * 0.0681 + 0.0019 ), 1);
+    }
+
+    if (! rcv_block(data4, P_WATER_TEMP)) {
+      initialized = false;
+      clear_buffer();
+    } else {
+      lcd.setCursor(8, 1);
+      lcd.print("WT ");
+      lcd.print( (-0.000014482 * pow(data4[3], 3) + 0.006319247 * pow(data4[3], 2) - 1.35140625 * data4[3] + 144.4095455), 1);
+    }
     //delay(20);  // 50msにするとアウト TODO あとで調整
 
   }
