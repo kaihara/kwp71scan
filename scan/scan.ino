@@ -44,8 +44,10 @@ const byte WAIT = 8;        // wait time.Waiting time settings may need to be fi
 const int TIME_OUT = 1000;  // loop time out
 const byte EOM = 0x03;      // end of block data
 
-/**/
-const byte ACK = 0x09;      // end of block data
+/* send block data parameters*/
+const byte P_ACK[1] = {0x09};
+const byte P_BATTERY[2] = {0x08, 0x01};
+const byte P_WATER_TEMP[2] = {0x08, 0x03};
 
 /* LCD Setting */
 LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
@@ -86,14 +88,14 @@ void loop() {
   if (initialized == true) {
     //TODO 4つのzoneにわけてデータを表示する。
     //battery v
-    if (! rcv_block2(data)) {
+    if (! rcv_block(data, P_BATTERY)) {
       initialized = false;
       clear_buffer();
     } else {
       lcd.setCursor(0, 0);
       lcd.clear();
       lcd.print("BT ");
-      lcd.print( (data[3] * 0.0681 + 0.0019 ), 2);
+      lcd.print( (data[3] * 0.0681 + 0.0019 ), 1);
     }
 
     //0x08, 0x03,"ADC 3 Water temperature",
@@ -154,7 +156,7 @@ void kw_init() {
   // Receives initialization data block from ECU.
   // Number of repetitions depends on the ECU. Eg: V6 twice, 16V four times.
   for (byte i = 0; i < NUMBER_INFO_BLOCKS ; i++) {
-    if (! rcv_block(data)) {
+    if (! rcv_block(data, P_ACK)) {
       initialized = false;
       clear_buffer();
       return - 1;
@@ -167,7 +169,7 @@ void kw_init() {
 }
 
 // Recieve block data.
-bool rcv_block(byte b[12]) {
+bool rcv_block(byte b[12] , byte para[]) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
@@ -193,7 +195,7 @@ bool rcv_block(byte b[12]) {
   if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
     //send_ack();
-    send_block({0x09});
+    send_block(para);
     return true;
   }
   return false;
