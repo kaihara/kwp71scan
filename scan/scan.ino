@@ -1,29 +1,29 @@
 #include <LiquidCrystal.h>
 
 /*
-note:
-Engine speed
-0x01, 0x3a,"Engine speed", 1,"RPM", 1, "#scaling unsigned 1 x*40 1/min";
+  note:
+  Engine speed
+  0x01, 0x3a,"Engine speed", 1,"RPM", 1, "#scaling unsigned 1 x*40 1/min";
 
-Engine Temperature
-0x08, 0x03,"ADC 3 Water temperature", 1,"Water temperature", 1, "#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
+  Engine Temperature
+  0x08, 0x03,"ADC 3 Water temperature", 1,"Water temperature", 1, "#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
 
-Air temperature
-0x08, 0x02,"ADC_2 airtemp sensor voltage", 1,"Tair sensor",  1,"#scaling unsigned 2 -2.01389E-05*(x**3)+0.008784722*(x**2)-1.676875*x+156.74375 Deg./C";
+  Air temperature
+  0x08, 0x02,"ADC_2 airtemp sensor voltage", 1,"Tair sensor",  1,"#scaling unsigned 2 -2.01389E-05*(x**3)+0.008784722*(x**2)-1.676875*x+156.74375 Deg./C";
 
-Air quantity
-unknown
+  Air quantity
+  unknown
 
-Battery voltage
-0x08, 0x01,"ADC 1 Battery Voltage", 1,"Battery voltage", 1, "#scaling unsigned 2 X/14.68 Volt";
+  Battery voltage
+  0x08, 0x01,"ADC 1 Battery Voltage", 1,"Battery voltage", 1, "#scaling unsigned 2 X/14.68 Volt";
 
-Vehicle speed
-unknown
+  Vehicle speed
+  unknown
 
 */
 
 /* Settiong parameter */
-byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155v6 -> 2 ,155 16V -> 4
+byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155 V6 -> 2 ,155 16V -> 4
 /* Settiong parameter */
 
 const int K_IN = 0;
@@ -66,13 +66,11 @@ void setup() {
   lcd.begin( 16, 2 );
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("kwp71scan");
-  lcd.setCursor(0, 1);
-  lcd.print("Initializing....");
+  lcd.print("Initializing");
 }
 
 void loop() {
-  //TODO 起動前のdelay時間 要調整 
+  //TODO 起動前のdelay時間 要調整
   // delay(1000);
   // Wait for ECU startup
   // delay(3000);
@@ -86,21 +84,26 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-
     //TODO 4つのzoneにわけてデータを表示する。
-    //battery v 
+    //battery v
     if (! rcv_block2(data)) {
       initialized = false;
       clear_buffer();
     } else {
       lcd.setCursor(0, 0);
-      lcd.print("Bat:");
-      lcd.print( (data[3] * 0.0681 + 0.0019 ),2);
+      lcd.clear();
+      lcd.print("BT ");
+      lcd.print( (data[3] * 0.0681 + 0.0019 ), 2);
     }
+
+    //0x08, 0x03,"ADC 3 Water temperature",
+    //1,"Water temperature", 1,
+    //"#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
+
     //delay(20);  // 50msにするとアウト TODO あとで調整
-    
+
   }
-  
+
 }
 
 /* kw-71 init */
@@ -189,7 +192,8 @@ bool rcv_block(byte b[12]) {
   // When receiving 03 at the end, block reception is regarded as normal end
   if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
-    send_ack();
+    //send_ack();
+    send_block({0x09});
     return true;
   }
   return false;
@@ -227,6 +231,18 @@ bool rcv_block2(byte b[12]) {
   return false;
 }
 
+
+void send_block(byte d[]) {
+  send_byte(sizeof(d) + 2);
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  for (byte i = 0; i < sizeof(d); i++) {
+    send_byte( d[i] );
+    read_byte();
+  }
+  send_byte( 0x03 );
+}
 
 void send_ack() {
   send_byte( 0x03 );
