@@ -96,7 +96,7 @@ void loop() {
       clear_buffer();
     } else {
       lcd.setCursor(0, 0);
-      lcd.print("BT ");
+      lcd.print("BA ");
       lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
     }
 
@@ -114,7 +114,7 @@ void loop() {
       clear_buffer();
     } else {
       lcd.setCursor(0, 1);
-      lcd.print("BT ");
+      lcd.print("BA ");
       lcd.print( (data3[3] * 0.0681 + 0.0019 ), 1);
     }
 
