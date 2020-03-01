@@ -45,9 +45,9 @@ const int TIME_OUT = 1000;  // loop time out
 const byte EOM = 0x03;      // end of block data
 
 /* send block data parameters*/
-const byte P_ACK[1] = {0x09};
-const byte P_BATTERY[2] = {0x08, 0x01};
-const byte P_WATER_TEMP[2] = {0x08, 0x03};
+const byte P_ACK[] = {0x09};
+const byte P_BATTERY[] = {0x08, 0x01};
+const byte P_WATER_TEMP[] = {0x08, 0x03};
 
 /* LCD Setting */
 LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
@@ -73,10 +73,10 @@ void loop() {
   // delay(1000);
   // Wait for ECU startup
   // delay(3000);
-  byte data1[12];
-  byte data2[12];
-  byte data3[12];
-  byte data4[12];
+  byte data1[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+  byte data2[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+  byte data3[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
+  byte data4[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 
   //init
   if ( initialized == false ) {
@@ -89,18 +89,22 @@ void loop() {
 
   //Get information
   if (initialized == true) {
+
+
     //TODO 4つのzoneにわけてデータを表示する。
     //battery v
-    if (! rcv_block(data1, P_BATTERY)) {
+    if (! rcv_block2(data1)) {
       initialized = false;
       clear_buffer();
     } else {
       lcd.setCursor(0, 0);
       lcd.print("BA ");
-      lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
+      //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
+      double d1 = data1[3] * 0.0681 + 0.0019;
+      lcd.print( String(data1[3], HEX));
     }
 
-    if (! rcv_block(data2, P_WATER_TEMP)) {
+    if (! rcv_block(*data2, P_WATER_TEMP)) {
       initialized = false;
       clear_buffer();
     } else {
@@ -109,13 +113,20 @@ void loop() {
       lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
     }
 
+/*
     if (! rcv_block(data3, P_BATTERY)) {
       initialized = false;
       clear_buffer();
     } else {
       lcd.setCursor(0, 1);
       lcd.print("BA ");
-      lcd.print( (data3[3] * 0.0681 + 0.0019 ), 1);
+      double d3 = data3[3] * 0.0681 + 0.0019;
+      //lcd.print( (data3[3] * 0.0681 + 0.0019 ), 1);
+      //lcd.print( d3, 1);
+      lcd.print(String(data3[3], HEX));
+
+      lcd.setCursor(8, 1);
+      lcd.print( d3, 1);
     }
 
     if (! rcv_block(data4, P_WATER_TEMP)) {
@@ -124,8 +135,10 @@ void loop() {
     } else {
       lcd.setCursor(8, 1);
       lcd.print("WT ");
-      lcd.print( (-0.000014482 * pow(data4[3], 3) + 0.006319247 * pow(data4[3], 2) - 1.35140625 * data4[3] + 144.4095455), 1);
+      //lcd.print( (-0.000014482 * pow(data4[3], 3) + 0.006319247 * pow(data4[3], 2) - 1.35140625 * data4[3] + 144.4095455), 1);
+      lcd.print( String(data4[3], HEX));
     }
+*/
     //delay(20);  // 50msにするとアウト TODO あとで調整
 
   }
@@ -180,7 +193,7 @@ void kw_init() {
   // Receives initialization data block from ECU.
   // Number of repetitions depends on the ECU. Eg: V6 twice, 16V four times.
   for (byte i = 0; i < NUMBER_INFO_BLOCKS ; i++) {
-    if (! rcv_block(data, P_ACK)) {
+    if (! rcv_block(*data, P_ACK)) {
       initialized = false;
       clear_buffer();
       return - 1;
@@ -193,7 +206,7 @@ void kw_init() {
 }
 
 // Recieve block data.
-bool rcv_block(byte b[12] , byte para[]) {
+bool rcv_block(byte* b[12] , byte para[]) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
@@ -211,7 +224,7 @@ bool rcv_block(byte b[12] , byte para[]) {
 
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
-      send_byte( b[i] ^ 0xFF );
+      send_byte( *b[i] ^ 0xFF );
     }
   }
 
@@ -361,6 +374,7 @@ int read_byte() {
     delay(1);
     t++;
   }
+  //TODO return -1の場合は処理を止めるのを入れたほうが良いかも。
   return b;
 }
 
