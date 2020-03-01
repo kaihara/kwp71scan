@@ -225,6 +225,7 @@ bool rcv_block(byte b[12] , byte para[]) {
   return false;
 }
 
+// TODO delete
 // Recieve block data.
 bool rcv_block2(byte b[12]) {
   byte bsize = 0x00;  //block data size
@@ -270,6 +271,7 @@ void send_block(byte d[]) {
   send_byte( 0x03 );
 }
 
+// TODO delete
 void send_ack() {
   send_byte( 0x03 );
   read_byte();
@@ -280,6 +282,7 @@ void send_ack() {
   send_byte( 0x03 );
 }
 
+// TODO delete
 void get_bat() {
   send_byte( 0x06 );
   read_byte();
@@ -296,6 +299,7 @@ void get_bat() {
   send_byte( 0x03 );
 }
 
+// TODO delete
 void get_bat_adc() {
   send_byte( 0x04 );
   read_byte();
