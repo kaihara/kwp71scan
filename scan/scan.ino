@@ -73,10 +73,10 @@ void loop() {
   // delay(1000);
   // Wait for ECU startup
   // delay(3000);
-  byte data1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  byte data2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  byte data3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  byte data4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  byte data1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+  byte data2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
+  byte data3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
+  byte data4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4};
 
   //init
   if ( initialized == false ) {
@@ -97,19 +97,28 @@ void loop() {
 
     //TODO The bug lives here.
     rcv_block(data1, P_BATTERY);
+
+
+
+    
     lcd.setCursor(0, 0);
     lcd.print("BA ");
     //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
     double d1 = data1[3] * 0.0681 + 0.0019;
-    lcd.print( String(data1[0], HEX));
+    lcd.print( String(data1[3], HEX));
 
+    delay(30);
+    
+/*
     rcv_block(data2, P_WATER_TEMP);
     lcd.setCursor(8, 0);
     lcd.print("WT ");
     //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
-    lcd.print( String(data2[0], HEX));
+    lcd.print( String(data2[3], HEX));
+    
+    delay(30);
 
-    /*
+
         if (! rcv_block(data1,P_BATTERY)) {
           initialized = false;
           clear_buffer();
@@ -161,6 +170,167 @@ void loop() {
 
   }
 
+}
+
+
+// Recieve block data.
+bool rcv_block(byte *b , byte para[]) {
+  byte bsize = 0x00;  //block data size
+  byte t = 0;
+  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
+    delay(1);
+    t++;
+  }
+
+  // In kw-71, the first byte of block data is the number of data bytes
+  bsize = read_byte();
+  delay(WAIT);
+  send_byte( bsize ^ 0xFF );  //return byte
+
+  for (byte i = 0; i < bsize; i++) {
+    b[i] = read_byte();
+
+    //03 = last は返信しない
+    if ( i != (bsize - 1) ) {
+      send_byte( b[i] ^ 0xFF );
+    }
+  }
+
+  // When receiving 03 at the end, block reception is regarded as normal end
+  if ( b[(bsize - 1)] == EOM ) {
+    bc = b[0];
+    //send_ack();
+    send_block(para);
+    return true;
+  }
+  return false;
+}
+
+
+// Recieve block data.
+bool rcv_info_block(byte *b , byte para[]) {
+  byte bsize = 0x00;  //block data size
+  byte t = 0;
+  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
+    delay(1);
+    t++;
+  }
+
+  // In kw-71, the first byte of block data is the number of data bytes
+  bsize = read_byte();
+  delay(WAIT);
+  send_byte( bsize ^ 0xFF );  //return byte
+
+  for (byte i = 0; i < bsize; i++) {
+    b[i] = read_byte();
+
+    //03 = last は返信しない
+    if ( i != (bsize - 1) ) {
+      send_byte( b[i] ^ 0xFF );
+    }
+  }
+
+  // When receiving 03 at the end, block reception is regarded as normal end
+  if ( b[(bsize - 1)] == EOM ) {
+    bc = b[0];
+    //send_ack();
+    send_block(para);
+    return true;
+  }
+  return false;
+}
+
+
+void send_block(byte *d) {
+  send_byte(sizeof(d) + 2);
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  for (byte i = 0; i < sizeof(d); i++) {
+    send_byte( d[i] );
+    read_byte();
+  }
+  send_byte( 0x03 );
+}
+
+// TODO delete
+void send_ack() {
+  send_byte( 0x03 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x09 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
+// TODO delete
+void get_bat() {
+  send_byte( 0x06 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x00 );
+  read_byte();
+  send_byte( 0x36 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
+// TODO delete
+void get_bat_adc() {
+  send_byte( 0x04 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x08 );
+  read_byte();
+  send_byte( 0x01 );
+  read_byte();
+  send_byte( 0x03 );
+}
+
+void clear_buffer() {
+  byte b;
+  while (Serial.available() > 0) {
+    b = Serial.read();
+  }
+}
+
+void serial_rx_off() {
+  UCSR0B &= ~(_BV(RXEN0));  //disable UART RX
+  delay(WAIT);                 //allow time for buffers to flush
+}
+
+void serial_tx_off() {
+  UCSR0B &= ~(_BV(TXEN0));  //disable UART TX
+  delay(WAIT);                 //allow time for buffers to flush
+}
+
+void serial_rx_on() {
+  Serial.begin(4800);   //setting enable bit didn't work, so do beginSerial
+}
+
+int read_byte() {
+  int b = -1;
+  byte t = 0;
+  while (t != 125  && (b = Serial.read()) == -1) {
+    delay(1);
+    t++;
+  }
+  //TODO return -1の場合は処理を止めるのを入れたほうが良いかも。
+  return b;
+}
+
+void send_byte(byte b) {
+  serial_rx_off();
+  Serial.write(b);
+  delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
+  serial_rx_on();
 }
 
 /* kw-71 init */
@@ -223,133 +393,6 @@ void kw_init() {
   return 0;
 }
 
-// Recieve block data.
-bool rcv_block(byte *b , byte para[]) {
-  byte bsize = 0x00;  //block data size
-  byte t = 0;
-  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
-    delay(1);
-    t++;
-  }
-
-  // In kw-71, the first byte of block data is the number of data bytes
-  bsize = read_byte();
-  delay(WAIT);
-  send_byte( bsize ^ 0xFF );  //return byte
-
-  for (byte i = 0; i < bsize; i++) {
-    b[i] = read_byte();
-
-    //03 = last は返信しない
-    if ( i != (bsize - 1) ) {
-      send_byte( b[i] ^ 0xFF );
-    }
-  }
-
-  // When receiving 03 at the end, block reception is regarded as normal end
-  if ( b[(bsize - 1)] == EOM ) {
-    bc = b[0];
-    //send_ack();
-    send_block(para);
-    return true;
-  }
-  return false;
-}
-
-// TODO delete
-// Recieve block data.
-bool rcv_block2(byte b[12]) {
-  byte bsize = 0x00;  //block data size
-  byte t = 0;
-  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
-    delay(1);
-    t++;
-  }
-
-  // In kw-71, the first byte of block data is the number of data bytes
-  bsize = read_byte();
-  delay(WAIT);
-  send_byte( bsize ^ 0xFF );  //return byte
-
-  for (byte i = 0; i < bsize; i++) {
-    b[i] = read_byte();
-
-    //03 = last は返信しない
-    if ( i != (bsize - 1) ) {
-      send_byte( b[i] ^ 0xFF );
-    }
-  }
-
-  // When receiving 0x03 at the end, block reception is regarded as normal end.
-  if ( b[(bsize - 1)] == EOM ) {
-    bc = b[0];
-    get_bat_adc();
-    return true;
-  }
-  return false;
-}
-
-
-void send_block(byte d[]) {
-  send_byte(sizeof(d) + 2);
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  for (byte i = 0; i < sizeof(d); i++) {
-    send_byte( d[i] );
-    read_byte();
-  }
-  send_byte( 0x03 );
-}
-
-// TODO delete
-void send_ack() {
-  send_byte( 0x03 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x09 );
-  read_byte();
-  send_byte( 0x03 );
-}
-
-// TODO delete
-void get_bat() {
-  send_byte( 0x06 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x01 );
-  read_byte();
-  send_byte( 0x01 );
-  read_byte();
-  send_byte( 0x00 );
-  read_byte();
-  send_byte( 0x36 );
-  read_byte();
-  send_byte( 0x03 );
-}
-
-// TODO delete
-void get_bat_adc() {
-  send_byte( 0x04 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x08 );
-  read_byte();
-  send_byte( 0x01 );
-  read_byte();
-  send_byte( 0x03 );
-}
-
-void clear_buffer() {
-  byte b;
-  while (Serial.available() > 0) {
-    b = Serial.read();
-  }
-}
-
 void bitbang(byte b) {
   serial_tx_off();
   serial_rx_off();
@@ -369,36 +412,4 @@ void bitbang(byte b) {
   // stop bit(200ms) + 190 ms delay
   digitalWrite(K_OUT, HIGH);
   delay(390);
-}
-
-void serial_rx_off() {
-  UCSR0B &= ~(_BV(RXEN0));  //disable UART RX
-  delay(WAIT);                 //allow time for buffers to flush
-}
-
-void serial_tx_off() {
-  UCSR0B &= ~(_BV(TXEN0));  //disable UART TX
-  delay(WAIT);                 //allow time for buffers to flush
-}
-
-void serial_rx_on() {
-  Serial.begin(4800);   //setting enable bit didn't work, so do beginSerial
-}
-
-int read_byte() {
-  int b = -1;
-  byte t = 0;
-  while (t != 125  && (b = Serial.read()) == -1) {
-    delay(1);
-    t++;
-  }
-  //TODO return -1の場合は処理を止めるのを入れたほうが良いかも。
-  return b;
-}
-
-void send_byte(byte b) {
-  serial_rx_off();
-  Serial.write(b);
-  delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
-  serial_rx_on();
 }
