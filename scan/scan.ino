@@ -66,12 +66,7 @@ void loop() {
   // delay(1000);
   // Wait for ECU startup
   // delay(3000);
-/*
-  byte data1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-  byte data2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
-  byte data3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
-  byte data4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4};
-*/
+
   //init
   if ( initialized == false ) {
     lcd.setCursor(0, 0);
@@ -87,17 +82,19 @@ void loop() {
   if (initialized == true) {
 
     //TODO 4つのzoneにわけてデータを表示する。
+    //TODO 通信が途絶した場合は、INITからやり直す
     //battery v
 
 
     //TODO The bug lives here.
-    //rcv_info(P_ACK);
-    send_ack();
-    lcd.setCursor(0, 0);
-    lcd.print("BA ");
-    //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
-    double d1 = data[3] * 0.0681 + 0.0019;
-    lcd.print( String(data[3], HEX));
+    if (! rcv_info(P_BATTERY)) {
+      initialized = false;
+      clear_buffer();
+    } else {
+      lcd.setCursor(0, 0);
+      lcd.print("BA ");
+      lcd.print( (data[3] * 0.0681 + 0.0019 ), 1);
+    }
 
     delay(30);
 
@@ -164,19 +161,31 @@ void loop() {
 
 }
 
+bool send_ack() {
+  send_byte( 0x03 );
+  read_byte();
+  send_byte( bc + 1 );
+  read_byte();
+  send_byte( 0x09 );
+  read_byte();
+  send_byte( 0x03 );
+  return true;
+}
 
 bool rcv_ecu_info() {
-  if ( rcv_block(data) == true && send_block(P_ACK) == true ){
+  //if ( rcv_block(data) == true && send_block(P_ACK) == true ) {
+  if ( rcv_block(data) == true && send_ack() == true ) {
     return true;
   }
   return false;
 }
 
 bool rcv_info(byte *para) {
-  if( send_block(para) == true  && rcv_block(data) == true ){
+  if ( send_block(para) == true ) {
+    //rcv_block(data) == true;
     return true;
   }
-  return false;  
+  return false;
 }
 
 // Recieve block data.
@@ -221,47 +230,6 @@ bool send_block(byte *p) {
   }
   send_byte( 0x03 );
   return true;
-}
-
-// TODO delete
-void send_ack() {
-  send_byte( 0x03 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x09 );
-  read_byte();
-  send_byte( 0x03 );
-}
-
-// TODO delete
-void get_bat() {
-  send_byte( 0x06 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x01 );
-  read_byte();
-  send_byte( 0x01 );
-  read_byte();
-  send_byte( 0x00 );
-  read_byte();
-  send_byte( 0x36 );
-  read_byte();
-  send_byte( 0x03 );
-}
-
-// TODO delete
-void get_bat_adc() {
-  send_byte( 0x04 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x08 );
-  read_byte();
-  send_byte( 0x01 );
-  read_byte();
-  send_byte( 0x03 );
 }
 
 void clear_buffer() {
@@ -349,7 +317,7 @@ bool kw_init() {
   }
 
   // Receives initialization data block from ECU.
-  // Number of repetitions depends on the ECU. Eg: V6 twice, 16V four times.
+  // Number of repetitions depends on the ECU. Eg: 155 V6 twice, 155 16V four times.
   for (byte i = 0; i < NUMBER_INFO_BLOCKS ; i++) {
     if ( rcv_ecu_info() == false ) {
       initialized = false;
@@ -358,7 +326,7 @@ bool kw_init() {
     }
   }
 
-  rcv_block(data);  //Last ACK ECU
+  rcv_block(data);  //ACK from ECU
 
   //init OK!
   initialized = true;
