@@ -32,14 +32,6 @@ const int K_OUT = 1;
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
 
-/* Supported PIDs */
-#define ENGINE_RPM 0x0C
-#define VEHICLE_SPEED 0x0D
-#define ENGINE_COOLANT_TEMP 0x05
-#define MAF_AIRFLOW 0x10
-#define THROTTLE_POS 0x11
-
-
 const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out
 const byte EOM = 0x03;      // end of block data
