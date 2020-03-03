@@ -31,6 +31,7 @@ const int K_OUT = 1;
 
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
+byte data[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out
@@ -65,11 +66,12 @@ void loop() {
   // delay(1000);
   // Wait for ECU startup
   // delay(3000);
+/*
   byte data1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
   byte data2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
   byte data3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
   byte data4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4};
-
+*/
   //init
   if ( initialized == false ) {
     lcd.setCursor(0, 0);
@@ -77,60 +79,58 @@ void loop() {
     bc = 1;   // reset block counter
     kw_init();
     lcd.clear();
+    lcd.print("End");
   }
+
 
   //Get information
   if (initialized == true) {
-
 
     //TODO 4つのzoneにわけてデータを表示する。
     //battery v
 
 
     //TODO The bug lives here.
-    rcv_block(data1, P_BATTERY);
-
-
-
-    
+    //rcv_info(P_ACK);
+    send_ack();
     lcd.setCursor(0, 0);
     lcd.print("BA ");
     //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
-    double d1 = data1[3] * 0.0681 + 0.0019;
-    lcd.print( String(data1[3], HEX));
+    double d1 = data[3] * 0.0681 + 0.0019;
+    lcd.print( String(data[3], HEX));
 
     delay(30);
-    
-/*
-    rcv_block(data2, P_WATER_TEMP);
-    lcd.setCursor(8, 0);
-    lcd.print("WT ");
-    //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
-    lcd.print( String(data2[3], HEX));
-    
-    delay(30);
+
+    /*
+        rcv_block(data2, P_WATER_TEMP);
+        lcd.setCursor(8, 0);
+        lcd.print("WT ");
+        //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
+        lcd.print( String(data2[3], HEX));
+
+        delay(30);
 
 
-        if (! rcv_block(data1,P_BATTERY)) {
-          initialized = false;
-          clear_buffer();
-        } else {
-          lcd.setCursor(0, 0);
-          lcd.print("BA ");
-          //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
-          double d1 = data1[3] * 0.0681 + 0.0019;
-          lcd.print( String(data1[3], HEX));
-        }
+            if (! rcv_block(data1,P_BATTERY)) {
+              initialized = false;
+              clear_buffer();
+            } else {
+              lcd.setCursor(0, 0);
+              lcd.print("BA ");
+              //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
+              double d1 = data1[3] * 0.0681 + 0.0019;
+              lcd.print( String(data1[3], HEX));
+            }
 
-        if (! rcv_block(data2, P_WATER_TEMP)) {
-          initialized = false;
-          clear_buffer();
-        } else {
-          lcd.setCursor(8, 0);
-          lcd.print("WT ");
-          //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
-          lcd.print( String(data2[3], HEX));
-        }
+            if (! rcv_block(data2, P_WATER_TEMP)) {
+              initialized = false;
+              clear_buffer();
+            } else {
+              lcd.setCursor(8, 0);
+              lcd.print("WT ");
+              //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
+              lcd.print( String(data2[3], HEX));
+            }
     */
     /*
         if (! rcv_block(data3, P_BATTERY)) {
@@ -165,8 +165,22 @@ void loop() {
 }
 
 
+bool rcv_ecu_info() {
+  if ( rcv_block(data) == true && send_block(P_ACK) == true ){
+    return true;
+  }
+  return false;
+}
+
+bool rcv_info(byte *para) {
+  if( send_block(para) == true  && rcv_block(data) == true ){
+    return true;
+  }
+  return false;  
+}
+
 // Recieve block data.
-bool rcv_block(byte *b , byte para[]) {
+bool rcv_block(byte *b) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
@@ -191,58 +205,22 @@ bool rcv_block(byte *b , byte para[]) {
   // When receiving 03 at the end, block reception is regarded as normal end
   if ( b[(bsize - 1)] == EOM ) {
     bc = b[0];
-    //send_ack();
-    send_block(para);
     return true;
   }
   return false;
 }
 
-
-// Recieve block data.
-bool rcv_info_block(byte *b , byte para[]) {
-  byte bsize = 0x00;  //block data size
-  byte t = 0;
-  while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
-    delay(1);
-    t++;
-  }
-
-  // In kw-71, the first byte of block data is the number of data bytes
-  bsize = read_byte();
-  delay(WAIT);
-  send_byte( bsize ^ 0xFF );  //return byte
-
-  for (byte i = 0; i < bsize; i++) {
-    b[i] = read_byte();
-
-    //03 = last は返信しない
-    if ( i != (bsize - 1) ) {
-      send_byte( b[i] ^ 0xFF );
-    }
-  }
-
-  // When receiving 03 at the end, block reception is regarded as normal end
-  if ( b[(bsize - 1)] == EOM ) {
-    bc = b[0];
-    //send_ack();
-    send_block(para);
-    return true;
-  }
-  return false;
-}
-
-
-void send_block(byte *d) {
-  send_byte(sizeof(d) + 2);
+bool send_block(byte *p) {
+  send_byte(sizeof(p) + 2);
   read_byte();
   send_byte( bc + 1 );
   read_byte();
-  for (byte i = 0; i < sizeof(d); i++) {
-    send_byte( d[i] );
+  for (byte i = 0; i < sizeof(p); i++) {
+    send_byte( p[i] );
     read_byte();
   }
   send_byte( 0x03 );
+  return true;
 }
 
 // TODO delete
@@ -326,7 +304,7 @@ void send_byte(byte b) {
 }
 
 /* kw-71 init */
-void kw_init() {
+bool kw_init() {
   int b = 0;
   byte kw1, kw2, kw3, kw4, kw5;
   byte data[12];
@@ -373,12 +351,14 @@ void kw_init() {
   // Receives initialization data block from ECU.
   // Number of repetitions depends on the ECU. Eg: V6 twice, 16V four times.
   for (byte i = 0; i < NUMBER_INFO_BLOCKS ; i++) {
-    if (! rcv_block(data, P_ACK)) {
+    if ( rcv_ecu_info() == false ) {
       initialized = false;
       clear_buffer();
       return - 1;
     }
   }
+
+  rcv_block(data);  //Last ACK ECU
 
   //init OK!
   initialized = true;
