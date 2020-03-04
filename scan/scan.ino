@@ -164,7 +164,7 @@ bool send_ack() {
   read_byte();
   send_byte( 0x09 );
   read_byte();
-  send_byte( 0x03 );
+  send_byte( EOM );
   return true;
 }
 
@@ -224,7 +224,7 @@ bool send_block(byte *p) {
     send_byte( p[i] );
     read_byte();
   }
-  send_byte( 0x03 );
+  send_byte( EOM );
   return true;
 }
 
