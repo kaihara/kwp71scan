@@ -38,9 +38,9 @@ const int TIME_OUT = 1000;  // loop time out(ms)
 const byte EOM = 0x03;      // byte of block end.
 
 /* Parameters for obtaining vehicle information */
-const byte P_ACK[] = {0x09};
-const byte P_BATTERY[] = {0x08, 0x01};
-const byte P_WATER_TEMP[] = {0x08, 0x03};
+const byte P_ACK[] = { 1, 0x09};
+const byte P_BATTERY[] = { 2, 0x08, 0x01};
+const byte P_WATER_TEMP[] = { 2, 0x08, 0x03};
 
 /* LCD Setting */
 LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
@@ -169,8 +169,8 @@ bool send_ack() {
 }
 
 bool rcv_ecu_info() {
-  //if ( rcv_block(data) == true && send_block(P_ACK) == true ) {
-  if ( rcv_block(data) == true && send_ack() == true ) {
+  if ( rcv_block(data) == true && send_block(P_ACK) == true ) {
+    //if ( rcv_block(data) == true && send_ack() == true ) {
     return true;
   }
   return false;
@@ -178,7 +178,6 @@ bool rcv_ecu_info() {
 
 bool rcv_info(byte *para) {
   if ( send_block(para) == true ) {
-    //rcv_block(data) == true;
     return true;
   }
   return false;
@@ -216,12 +215,12 @@ bool rcv_block(byte *b) {
 }
 
 bool send_block(byte *p) {
-  send_byte(sizeof(p) + 2);
+  send_byte(p[0] + 2);
   read_byte();
   send_byte( bc + 1 );
   read_byte();
-  for (byte i = 0; i < sizeof(p); i++) {
-    send_byte( p[i] );
+  for (byte i = 0; i < p[0]; i++) {
+    send_byte( p[ i + 1 ] );
     read_byte();
   }
   send_byte( EOM );
