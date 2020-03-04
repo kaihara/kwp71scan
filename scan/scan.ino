@@ -228,10 +228,10 @@ bool send_block(byte *p) {
   return true;
 }
 
+// Clear serial receive buffer
 void clear_buffer() {
-  byte b;
   while (Serial.available() > 0) {
-    b = Serial.read();
+    Serial.read();
   }
 }
 
