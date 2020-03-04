@@ -67,11 +67,12 @@ void loop() {
   // Wait for ECU startup
   // delay(3000);
 
+  clear_buffer();
+
   //init
   if ( initialized == false ) {
     lcd.setCursor(0, 0);
     lcd.print("Initializing");
-
     kw_init();
   }
 
@@ -85,14 +86,18 @@ void loop() {
     //TODO The bug lives here.
     if ( rcv_info(P_BATTERY) == false ) {
       initialized = false;
-      clear_buffer();
+
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("ERROR1 ");
+      delay(5000);
     } else {
       lcd.setCursor(0, 0);
       lcd.print("BA ");
       lcd.print( data[3] * 0.0681 + 0.0019 , 1);
     }
 
-    delay(30);
+    Serial.flush();
 
     /*
         rcv_block(data2, P_WATER_TEMP);
@@ -125,32 +130,7 @@ void loop() {
               lcd.print( String(data2[3], HEX));
             }
     */
-    /*
-        if (! rcv_block(data3, P_BATTERY)) {
-          initialized = false;
-          clear_buffer();
-        } else {
-          lcd.setCursor(0, 1);
-          lcd.print("BA ");
-          double d3 = data3[3] * 0.0681 + 0.0019;
-          //lcd.print( (data3[3] * 0.0681 + 0.0019 ), 1);
-          //lcd.print( d3, 1);
-          lcd.print(String(data3[3], HEX));
 
-          lcd.setCursor(8, 1);
-          lcd.print( d3, 1);
-        }
-
-        if (! rcv_block(data4, P_WATER_TEMP)) {
-          initialized = false;
-          clear_buffer();
-        } else {
-          lcd.setCursor(8, 1);
-          lcd.print("WT ");
-          //lcd.print( (-0.000014482 * pow(data4[3], 3) + 0.006319247 * pow(data4[3], 2) - 1.35140625 * data4[3] + 144.4095455), 1);
-          lcd.print( String(data4[3], HEX));
-        }
-    */
     //delay(20);  // 50msにするとアウト TODO あとで調整
 
   }
@@ -159,15 +139,15 @@ void loop() {
 
 
 bool rcv_ecu_info() {
-  if ( rcv_block(data) == true && send_block(P_ACK) == true ) {
+  if ( rcv_block(data) && send_block(P_ACK) ) {
     return true;
   }
   return false;
 }
 
 bool rcv_info(byte *para) {
-  if ( send_block(para) == true && rcv_block(data) == true ) {
-    send_block(P_ACK);
+  if ( send_block(para) && rcv_block(data) ) {
+      //send_block(P_ACK);
     return true;
   }
   return false;
@@ -205,13 +185,16 @@ bool rcv_block(byte *b) {
 }
 
 bool send_block(byte *p) {
+  
   send_byte(p[0] + 2);
-  read_byte();
+  if(read_byte() == -1) return false; 
+  
   send_byte( bc + 1 );
-  read_byte();
+  if(read_byte() == -1) return false; 
+  
   for (byte i = 0; i < p[0]; i++) {
     send_byte( p[ i + 1 ] );
-    read_byte();
+    if(read_byte() == -1) return false; 
   }
   send_byte( EOM );
   return true;
