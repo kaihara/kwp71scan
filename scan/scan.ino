@@ -34,10 +34,10 @@ byte bc = 1;                   // block counter
 byte data[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
-const int TIME_OUT = 1000;  // loop time out
-const byte EOM = 0x03;      // end of block data
+const int TIME_OUT = 1000;  // loop time out(ms)
+const byte EOM = 0x03;      // byte of block end.
 
-/* send block data parameters*/
+/* Parameters for obtaining vehicle information */
 const byte P_ACK[] = {0x09};
 const byte P_BATTERY[] = {0x08, 0x01};
 const byte P_WATER_TEMP[] = {0x08, 0x03};
@@ -71,10 +71,8 @@ void loop() {
   if ( initialized == false ) {
     lcd.setCursor(0, 0);
     lcd.print("Initializing");
-    bc = 1;   // reset block counter
+
     kw_init();
-    lcd.clear();
-    lcd.print("End");
   }
 
 
@@ -84,16 +82,14 @@ void loop() {
     //TODO 4つのzoneにわけてデータを表示する。
     //TODO 通信が途絶した場合は、INITからやり直す
     //battery v
-
-
     //TODO The bug lives here.
-    if (! rcv_info(P_BATTERY)) {
+    if ( rcv_info(P_BATTERY) == false ) {
       initialized = false;
       clear_buffer();
     } else {
       lcd.setCursor(0, 0);
       lcd.print("BA ");
-      lcd.print( (data[3] * 0.0681 + 0.0019 ), 1);
+      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
     }
 
     delay(30);
@@ -300,7 +296,7 @@ bool kw_init() {
   }
   if (b != 0x55) {
     initialized = false;
-    return -1;
+    return false;
   }
   // wait for kw1 and kw2
   // TODO kw2以外不要なので消す
@@ -314,6 +310,8 @@ bool kw_init() {
   //response to ECU
   if (kw2 != 0x00) {
     send_byte(kw2 ^ 0xFF);
+  } else {
+    return false;
   }
 
   // Receives initialization data block from ECU.
@@ -322,15 +320,15 @@ bool kw_init() {
     if ( rcv_ecu_info() == false ) {
       initialized = false;
       clear_buffer();
-      return - 1;
+      return false;
     }
   }
 
-  rcv_block(data);  //ACK from ECU
+  rcv_block(data);  //Last ACK from ECU
 
   //init OK!
   initialized = true;
-  return 0;
+  return true;
 }
 
 void bitbang(byte b) {
