@@ -157,27 +157,17 @@ void loop() {
 
 }
 
-bool send_ack() {
-  send_byte( 0x03 );
-  read_byte();
-  send_byte( bc + 1 );
-  read_byte();
-  send_byte( 0x09 );
-  read_byte();
-  send_byte( EOM );
-  return true;
-}
 
 bool rcv_ecu_info() {
   if ( rcv_block(data) == true && send_block(P_ACK) == true ) {
-    //if ( rcv_block(data) == true && send_ack() == true ) {
     return true;
   }
   return false;
 }
 
 bool rcv_info(byte *para) {
-  if ( send_block(para) == true ) {
+  if ( send_block(para) == true && rcv_block(data) == true ) {
+    send_block(P_ACK);
     return true;
   }
   return false;
