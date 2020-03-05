@@ -38,6 +38,7 @@ const int TIME_OUT = 1000;  // loop time out(ms)
 const byte EOM = 0x03;      // byte of block end.
 
 /* Parameters for obtaining vehicle information */
+/* { Length , Parameters } */
 const byte P_ACK[] = { 1, 0x09};
 const byte P_BATTERY[] = { 2, 0x08, 0x01};
 const byte P_WATER_TEMP[] = { 2, 0x08, 0x03};
