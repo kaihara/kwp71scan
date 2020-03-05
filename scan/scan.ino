@@ -73,68 +73,54 @@ void loop() {
 
   //init
   if ( initialized == false ) {
+    lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Initializing");
     kw_init();
+    lcd.clear();
   }
-
 
   //Get information
   if (initialized == true) {
-
     //TODO 4つのzoneにわけてデータを表示する。
     //TODO 通信が途絶した場合は、INITからやり直す
     //battery v
-    //TODO The bug lives here.
+    lcd.setCursor(0, 0);
     if ( rcv_info(P_BATTERY) == false ) {
       initialized = false;
-
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("ERROR1 ");
-      delay(5000);
+      lcd.print("ERROR");
     } else {
-      lcd.setCursor(0, 0);
       lcd.print("BA ");
       lcd.print( data[3] * 0.0681 + 0.0019 , 1);
     }
-
-    Serial.flush();
-
-    /*
-        rcv_block(data2, P_WATER_TEMP);
-        lcd.setCursor(8, 0);
-        lcd.print("WT ");
-        //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
-        lcd.print( String(data2[3], HEX));
-
-        delay(30);
-
-
-            if (! rcv_block(data1,P_BATTERY)) {
-              initialized = false;
-              clear_buffer();
-            } else {
-              lcd.setCursor(0, 0);
-              lcd.print("BA ");
-              //lcd.print( (data1[3] * 0.0681 + 0.0019 ), 1);
-              double d1 = data1[3] * 0.0681 + 0.0019;
-              lcd.print( String(data1[3], HEX));
-            }
-
-            if (! rcv_block(data2, P_WATER_TEMP)) {
-              initialized = false;
-              clear_buffer();
-            } else {
-              lcd.setCursor(8, 0);
-              lcd.print("WT ");
-              //lcd.print( (-0.000014482 * pow(data2[3], 3) + 0.006319247 * pow(data2[3], 2) - 1.35140625 * data2[3] + 144.4095455), 1);
-              lcd.print( String(data2[3], HEX));
-            }
-    */
-
-    //delay(20);  // 50msにするとアウト TODO あとで調整
-
+    delay(20);
+    lcd.setCursor(8, 0);
+    if ( rcv_info(P_BATTERY) == false ) {
+      initialized = false;
+      lcd.print("ERROR");
+    } else {
+      lcd.print("BA ");
+      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+    }
+    delay(20);
+    lcd.setCursor(0, 1);
+    if ( rcv_info(P_BATTERY) == false ) {
+      initialized = false;
+      lcd.print("ERROR");
+    } else {
+      lcd.print("BA ");
+      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+    }
+    delay(20);
+    lcd.setCursor(8, 1);
+    if ( rcv_info(P_BATTERY) == false ) {
+      initialized = false;
+      lcd.print("ERROR");
+    } else {
+      lcd.print("BA ");
+      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+    }
+    delay(20);
   }
 
 }
@@ -149,7 +135,6 @@ bool rcv_ecu_info() {
 
 bool rcv_info(byte *para) {
   if ( send_block(para) && rcv_block(data) ) {
-      //send_block(P_ACK);
     return true;
   }
   return false;
@@ -187,16 +172,16 @@ bool rcv_block(byte *b) {
 }
 
 bool send_block(byte *p) {
-  
+
   send_byte(p[0] + 2);
-  if(read_byte() == -1) return false; 
-  
-  send_byte( bc + 1 );
-  if(read_byte() == -1) return false; 
-  
+  if (read_byte() == -1) return false;
+
+  send_byte( bc + 1);
+  if (read_byte() == -1) return false;
+
   for (byte i = 0; i < p[0]; i++) {
     send_byte( p[ i + 1 ] );
-    if(read_byte() == -1) return false; 
+    if (read_byte() == -1) return false;
   }
   send_byte( EOM );
   return true;
@@ -238,7 +223,8 @@ int read_byte() {
 void send_byte(byte b) {
   serial_rx_off();
   Serial.write(b);
-  delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
+  //delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
+  Serial.flush();
   serial_rx_on();
 }
 
@@ -253,7 +239,7 @@ bool kw_init() {
   delay(2600); //k line should be free of traffic for at least two secconds.
 
   // drive K line high for 300ms
-  digitalWrite(K_OUT, HIGH);
+  digitalWrite(K_TX, HIGH);
   delay(300);
 
   //send Motronic address(0x10)
@@ -311,18 +297,18 @@ void bitbang(byte b) {
   serial_rx_off();
   // send byte at 5 bauds
   // start bit
-  digitalWrite(K_OUT, LOW);
+  digitalWrite(K_TX, LOW);
   delay(200);
   // data
   for (byte mask = 0x01; mask; mask <<= 1) {
     if (b & mask) { // choose bit
-      digitalWrite(K_OUT, HIGH); // send 1
+      digitalWrite(K_TX, HIGH); // send 1
     } else {
-      digitalWrite(K_OUT, LOW); // send 0
+      digitalWrite(K_TX, LOW); // send 0
     }
     delay(200);
   }
   // stop bit(200ms) + 190 ms delay
-  digitalWrite(K_OUT, HIGH);
+  digitalWrite(K_TX, HIGH);
   delay(390);
 }
