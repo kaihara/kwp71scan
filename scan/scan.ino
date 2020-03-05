@@ -26,8 +26,8 @@
 byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155 V6 -> 2 ,155 16V -> 4
 /* Settiong parameter */
 
-const int K_IN = 0;
-const int K_OUT = 1;
+const int K_RX = 0;
+const int K_TX = 1;
 
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
@@ -47,8 +47,8 @@ LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
 
 
 void setup() {
-  pinMode(K_OUT, OUTPUT);
-  pinMode(K_IN, INPUT);
+  pinMode(K_TX, OUTPUT);
+  pinMode(K_RX, INPUT);
 
   Serial.begin(4800);
 
