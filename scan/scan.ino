@@ -52,6 +52,7 @@ void setup() {
   pinMode(K_RX, INPUT);
 
   Serial.begin(4800);
+  Serial.setTimeout(50);
 
   //clear rx buffer
   clear_buffer();
@@ -220,6 +221,7 @@ void serial_tx_off() {
 
 void serial_rx_on() {
   Serial.begin(4800);   //setting enable bit didn't work, so do beginSerial
+  Serial.setTimeout(50);
 }
 
 int read_byte() {
