@@ -95,12 +95,12 @@ void loop() {
     }
     delay(20);
     lcd.setCursor(8, 0);
-    if ( rcv_info(P_BATTERY) == false ) {
+    if ( rcv_info(P_WATER_TEMP) == false ) {
       initialized = false;
       lcd.print("ERROR");
     } else {
-      lcd.print("BA ");
-      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+      lcd.print("WT ");
+      lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
     }
     delay(20);
     lcd.setCursor(0, 1);
@@ -113,12 +113,12 @@ void loop() {
     }
     delay(20);
     lcd.setCursor(8, 1);
-    if ( rcv_info(P_BATTERY) == false ) {
+    if ( rcv_info(P_WATER_TEMP) == false ) {
       initialized = false;
       lcd.print("ERROR");
     } else {
-      lcd.print("BA ");
-      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+      lcd.print("WT ");
+      lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
     }
     delay(20);
   }
@@ -223,8 +223,7 @@ int read_byte() {
 void send_byte(byte b) {
   serial_rx_off();
   Serial.write(b);
-  //delay(WAIT);    // ISO requires 5-20 ms delay between bytes.
-  Serial.flush();
+  Serial.flush();  // or delay(WAIT);
   serial_rx_on();
 }
 
