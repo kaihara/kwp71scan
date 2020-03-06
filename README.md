@@ -3,7 +3,8 @@
 # kwp71scan
 Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.  
 
-<img width="366" alt="Finished product image" src="https://user-images.githubusercontent.com/3794315/76039639-5db08400-5f90-11ea-8f99-b0416358e8c2.PNG">(Finished product image)
+<img width="366" alt="Finished product image" src="https://user-images.githubusercontent.com/3794315/76039639-5db08400-5f90-11ea-8f99-b0416358e8c2.PNG">  
+(Image of finished product)
 
 # Progress
  ***Prototype production***  
