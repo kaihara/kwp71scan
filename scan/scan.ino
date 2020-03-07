@@ -22,16 +22,16 @@
 
 */
 
-/* Settiong parameter */
+/* Setting parameter */
 byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155 V6 -> 2 ,155 16V -> 4
-/* Settiong parameter */
+/* Setting parameter */
 
 const int K_RX = 0;
 const int K_TX = 1;
 
 boolean initialized = false;  // 5baud init status
 byte bc = 1;                   // block counter
-byte data[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte data[15] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out(ms)
@@ -125,7 +125,7 @@ void loop() {
 
 }
 
-
+// Recieve ECU additional infomation.
 bool rcv_ecu_info() {
   if ( rcv_block(data) && send_block(P_ACK) ) {
     return true;
@@ -133,6 +133,7 @@ bool rcv_ecu_info() {
   return false;
 }
 
+// Recieve specified information of vehicle.
 bool rcv_info(byte *para) {
   if ( send_block(para) && rcv_block(data) ) {
     return true;
@@ -201,7 +202,7 @@ void serial_rx_off() {
 
 void serial_tx_off() {
   UCSR0B &= ~(_BV(TXEN0));  //disable UART TX
-  delay(WAIT);                 //allow time for buffers to flush
+  Serial.flush();  // or delay(WAIT);
 }
 
 void serial_rx_on() {
@@ -231,7 +232,7 @@ void send_byte(byte b) {
 bool kw_init() {
   int b = 0;
   byte kw1, kw2, kw3, kw4, kw5;
-  byte data[12];
+  byte data[15];
 
   clear_buffer();
 
@@ -259,7 +260,6 @@ bool kw_init() {
     return false;
   }
   // wait for kw1 and kw2
-  // TODO kw2以外不要なので消す
   kw1 = read_byte();
   kw2 = read_byte();
   kw3 = read_byte();
@@ -267,7 +267,8 @@ bool kw_init() {
   kw5 = read_byte();
 
   delay(WAIT);
-  //response to ECU
+  //delay(50);
+  // response to ECU
   if (kw2 != 0x00) {
     send_byte(kw2 ^ 0xFF);
   } else {
