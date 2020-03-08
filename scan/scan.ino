@@ -47,6 +47,8 @@ const byte P_WATER_TEMP[] = { 2, 0x08, 0x03};
 LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
 
 
+byte gr_counter = 1;  //Group Reading
+
 void setup() {
   pinMode(K_TX, OUTPUT);
   pinMode(K_RX, INPUT);
@@ -82,45 +84,104 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-    //TODO 4つのzoneにわけてデータを表示する。
-    //TODO 通信が途絶した場合は、INITからやり直す
-    //battery v
-    lcd.setCursor(0, 0);
-    if ( rcv_info(P_BATTERY) == false ) {
+    /*
+        //TODO 4つのzoneにわけてデータを表示する。
+        //TODO 通信が途絶した場合は、INITからやり直す
+        //battery v
+        lcd.setCursor(0, 0);
+        if ( rcv_info(P_BATTERY) == false ) {
+          initialized = false;
+          lcd.print("ERROR");
+        } else {
+          lcd.print("BA ");
+          lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+        }
+        delay(20);
+        lcd.setCursor(8, 0);
+        if ( rcv_info(P_WATER_TEMP) == false ) {
+          initialized = false;
+          lcd.print("ERROR");
+        } else {
+          lcd.print("WT ");
+          lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
+        }
+        delay(20);
+        lcd.setCursor(0, 1);
+        if ( rcv_info(P_BATTERY) == false ) {
+          initialized = false;
+          lcd.print("ERROR");
+        } else {
+          lcd.print("BA ");
+          lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+        }
+        delay(20);
+        lcd.setCursor(8, 1);
+        if ( rcv_info(P_WATER_TEMP) == false ) {
+          initialized = false;
+          lcd.print("ERROR");
+        } else {
+          lcd.print("WT ");
+          lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
+        }
+        delay(20);
+    */
+
+    // Group Reading
+    byte para[] = {4, 0x01, 1 , 0, gr_counter};
+    if ( rcv_info(para) == false ) {
       initialized = false;
-      lcd.print("ERROR");
+      lcd.print("ER:");
+      lcd.print(gr_counter);
+      delay(5000);
     } else {
-      lcd.print("BA ");
-      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
-    }
-    delay(20);
-    lcd.setCursor(8, 0);
-    if ( rcv_info(P_WATER_TEMP) == false ) {
+      lcd.setCursor(0, 0);
+      lcd.print(data[1]);
+      lcd.print(" ");
+      lcd.print(data[2]);
+      lcd.print(" ");
+      lcd.print(data[3]);
+      lcd.print(" ");
+      lcd.print(data[4]);
+      lcd.print(" ");
+      lcd.print(data[5]);
+      lcd.print(" ");
+      lcd.print(data[6]);
+
+      lcd.setCursor(0, 1);
+      lcd.print(data[7]);
+      lcd.print(" ");
+      lcd.print(data[8]);
+      lcd.print(" ");
+      lcd.print(data[9]);
+      lcd.print(" ");
+      lcd.print(data[10]);
+      lcd.print(" ");
+      lcd.print(data[11]);
+      lcd.print(" ");
+      lcd.print(data[12]);
+
+      Serial.println("");
+      Serial.print(gr_counter);
+      Serial.print(",");
+      Serial.print(String(data[1], HEX));
+      Serial.print(",");
+      Serial.print(String(data[2], HEX));
+      Serial.print(",");
+      Serial.print(String(data[3], HEX));
+      Serial.println("");
+
+      Serial.print(String(data[4], HEX));
+      Serial.print(",");
+      Serial.print(String(data[5], HEX));
+      Serial.print(",");
+      Serial.print(String(data[6], HEX));
+      Serial.println("");
+
+      gr_counter = gr_counter + 1;
+      delay(500);
       initialized = false;
-      lcd.print("ERROR");
-    } else {
-      lcd.print("WT ");
-      lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
     }
-    delay(20);
-    lcd.setCursor(0, 1);
-    if ( rcv_info(P_BATTERY) == false ) {
-      initialized = false;
-      lcd.print("ERROR");
-    } else {
-      lcd.print("BA ");
-      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
-    }
-    delay(20);
-    lcd.setCursor(8, 1);
-    if ( rcv_info(P_WATER_TEMP) == false ) {
-      initialized = false;
-      lcd.print("ERROR");
-    } else {
-      lcd.print("WT ");
-      lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
-    }
-    delay(20);
+    /*    */
   }
 
 }
@@ -134,7 +195,7 @@ bool rcv_ecu_info() {
 }
 
 // Recieve specified information of vehicle.
-bool rcv_info(byte *para) {
+bool rcv_info(byte * para) {
   if ( send_block(para) && rcv_block(data) ) {
     return true;
   }
@@ -142,7 +203,7 @@ bool rcv_info(byte *para) {
 }
 
 // Recieve block data.
-bool rcv_block(byte *b) {
+bool rcv_block(byte * b) {
   byte bsize = 0x00;  //block data size
   byte t = 0;
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
@@ -172,7 +233,7 @@ bool rcv_block(byte *b) {
   return false;
 }
 
-bool send_block(byte *p) {
+bool send_block(byte * p) {
 
   send_byte(p[0] + 2);
   if (read_byte() == -1) return false;
