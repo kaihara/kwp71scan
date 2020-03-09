@@ -84,7 +84,6 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-    /*
         //TODO 4つのzoneにわけてデータを表示する。
         //TODO 通信が途絶した場合は、INITからやり直す
         //battery v
@@ -124,8 +123,8 @@ void loop() {
           lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
         }
         delay(20);
-    */
-
+     /*   */
+/*
     // Group Reading
     byte para[] = {4, 0x01, 1 , 0, gr_counter};
     if ( rcv_info(para) == false ) {
