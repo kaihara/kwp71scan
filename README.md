@@ -1,7 +1,17 @@
 ## :construction: Currently under development. :construction:
 I'm investigating the kind of RAM read of KWP71. I am in trouble because I cannot find good information.  
-At present, the battery volt value and engine coolant temperature value can be obtained from the ADC channel.  
-
+At present, battery voltage and engine coolant temperature can be obtained from the ADC channel.  
+  
+Wanted information  
+ [X] Battery voltage[ADC]  
+ [X] Engine coolant temperature[ADC]
+ [ ] Battery voltage  
+ [ ] Engine coolant temperature
+ [ ] Engine oil pressure  
+ [ ] Engine RPM  
+ [ ] Vehicle speed  
+ [ ] Engine load  
+  
 # kwp71scan
 Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.  
 
