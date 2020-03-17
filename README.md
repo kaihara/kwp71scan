@@ -5,7 +5,7 @@ At present, battery voltage and engine coolant temperature can be obtained from 
 Wanted information  
  - [X] Battery voltage[ADC]  
  - [X] Engine coolant temperature[ADC]
- - [ ] Battery voltage  
+ - [X] Battery voltage  
  - [ ] Engine coolant temperature
  - [ ] Engine oil pressure  
  - [ ] Engine RPM  
