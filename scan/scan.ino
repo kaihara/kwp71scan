@@ -31,6 +31,7 @@ const int K_RX = 0;
 const int K_TX = 1;
 
 boolean initialized = false;  // 5baud init status
+boolean clear_lcd = false;    // if cause exception then clear LCD
 byte bc = 1;                   // block counter
 byte data[15] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -43,7 +44,7 @@ const byte EOM = 0x03;      // byte of block end.
 const byte ACK[] = { 1, 0x09};
 const byte ADC_BATTERY[] = { 2, 0x08, 0x01};      // ( data[3] * 0.0681 + 0.0019 , 1)
 const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};   // ( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1)
-const byte BATTERY[] = { 4, 0x01,0x01,0x00,0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
+const byte BATTERY[] = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
 
 /* LCD Setting */
 LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
@@ -52,6 +53,12 @@ LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
 byte gr_counter = 1;  //Group Reading
 
 void setup() {
+  lcd.begin( 16, 2 );
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Starting");
+  delay(5000);
+
   pinMode(K_TX, OUTPUT);
   pinMode(K_RX, INPUT);
 
@@ -62,9 +69,12 @@ void setup() {
   clear_buffer();
 
   initialized = false;
+  clear_lcd = true;
 
   //LCD print
-  lcd.begin( 16, 2 );
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Initializing");
 }
 
 void loop() {
@@ -72,11 +82,10 @@ void loop() {
 
   //init
   if ( initialized == false ) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Initializing");
     kw_init();
-    lcd.clear();
+    if (clear_lcd == true) {
+      lcd.clear();
+    }
   }
 
   //Get information
@@ -85,12 +94,12 @@ void loop() {
     //TODO 通信が途絶した場合は、INITからやり直す
     //battery v
     lcd.setCursor(0, 0);
-    if ( rcv_info(ADC_BATTERY) == false ) {
+    if ( rcv_info(BATTERY) == false ) {
       initialized = false;
       lcd.print("ERROR");
     } else {
       lcd.print("BA ");
-      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
+      lcd.print( data[2] * 0.0681 + 0.0019 , 1);
     }
     delay(20);
     lcd.setCursor(8, 0);
@@ -103,23 +112,22 @@ void loop() {
     }
     delay(20);
     lcd.setCursor(0, 1);
-    if ( rcv_info(ADC_BATTERY) == false ) {
-      initialized = false;
-      lcd.print("ERROR");
-    } else {
-      lcd.print("BA ");
-      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
-    }
-    delay(20);
-    lcd.setCursor(8, 1);
-    if ( rcv_info(BATTERY) == false ) {
-      initialized = false;
-      lcd.print("ERROR");
-    } else {
-      lcd.print("BA ");
-      lcd.print( data[2] * 0.0681 + 0.0019 , 1);
-    }
-    delay(20);
+    lcd.print("DTC: 0  NO ERROR");
+    delay(1000);
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+    delay(1000);
+    lcd.setCursor(0, 1);
+    lcd.print("DTC: 0  NO ERROR");
+    delay(1000);
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+    delay(1000);
+    lcd.setCursor(0, 1);
+    lcd.print("DTC: 0  NO ERROR");
+    delay(1000);
+    initialized = false;
+    clear_lcd = false;
   }
 
 }
