@@ -24,6 +24,7 @@
 
 /* Setting parameter */
 byte NUMBER_INFO_BLOCKS = 2; // Number of information blocks at initialization 155 V6 -> 2 ,155 16V -> 4
+
 /* Setting parameter */
 
 const int K_RX = 0;
@@ -67,11 +68,6 @@ void setup() {
 }
 
 void loop() {
-  //TODO 起動前のdelay時間 要調整
-  // delay(1000);
-  // Wait for ECU startup
-  // delay(3000);
-
   clear_buffer();
 
   //init
@@ -124,64 +120,6 @@ void loop() {
       lcd.print( data[2] * 0.0681 + 0.0019 , 1);
     }
     delay(20);
-    /*   */
-    /*
-        // Group Reading
-        byte para[] = {4, 0x01, 1 , 0, gr_counter};
-        if ( rcv_info(para) == false ) {
-          initialized = false;
-          lcd.print("ER:");
-          lcd.print(gr_counter);
-          delay(5000);
-        } else {
-          lcd.setCursor(0, 0);
-          lcd.print(data[1]);
-          lcd.print(" ");
-          lcd.print(data[2]);
-          lcd.print(" ");
-          lcd.print(data[3]);
-          lcd.print(" ");
-          lcd.print(data[4]);
-          lcd.print(" ");
-          lcd.print(data[5]);
-          lcd.print(" ");
-          lcd.print(data[6]);
-
-          lcd.setCursor(0, 1);
-          lcd.print(data[7]);
-          lcd.print(" ");
-          lcd.print(data[8]);
-          lcd.print(" ");
-          lcd.print(data[9]);
-          lcd.print(" ");
-          lcd.print(data[10]);
-          lcd.print(" ");
-          lcd.print(data[11]);
-          lcd.print(" ");
-          lcd.print(data[12]);
-
-          Serial.println("");
-          Serial.print(gr_counter);
-          Serial.print(",");
-          Serial.print(String(data[1], HEX));
-          Serial.print(",");
-          Serial.print(String(data[2], HEX));
-          Serial.print(",");
-          Serial.print(String(data[3], HEX));
-          Serial.println("");
-
-          Serial.print(String(data[4], HEX));
-          Serial.print(",");
-          Serial.print(String(data[5], HEX));
-          Serial.print(",");
-          Serial.print(String(data[6], HEX));
-          Serial.println("");
-
-          gr_counter = gr_counter + 1;
-          delay(500);
-          initialized = false;
-        }
-        /*    */
   }
 
 }
