@@ -47,7 +47,7 @@ const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};   // ( (-0.000014482 * pow(data[
 const byte BATTERY[] = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
 
 /* LCD Setting */
-LiquidCrystal lcd( 4, 6, 10, 11, 12, 13 );
+LiquidCrystal lcd( 4, 6, 9, 10, 11, 12 );
 
 
 byte gr_counter = 1;  //Group Reading
