@@ -20,7 +20,7 @@ Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155.
 
 # Progress
  ***Prototype production***  
- - [X] Obtaining ECU / Immo unit.  
+ - [X] Get ECU / Immo unit.  
  - [X] Make ECU workbench.  
  - [ ] Prototype production.  
    - [X] Creating a prototype board.  
