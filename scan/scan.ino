@@ -83,7 +83,7 @@ void loop() {
   //init
   if ( initialized == false ) {
     kw_init();
-    if (clear_lcd == true) {
+    if ( initialized == true && clear_lcd == true ) {
       lcd.clear();
     }
   }
