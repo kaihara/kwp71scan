@@ -40,7 +40,7 @@ Using Arduino and L9637D, it is made to communicate with ECU and immobilizer uni
 Currently, I have created a program that initializes the connection with the ECU. The connection result is confirmed on the Arduino serial monitor.
 Eventually the kpw71scan will be connected to the LCD and mounted on the vehicle dashboard.
 
-# About Fit for other vehicles
+# About fit for other vehicles
 Tested with 155 16V and V6 ECU and immobilizer units.
 
 If you have a 90s Motronic ecu vehicle with a Fiat / Alfa 3pin diagnostic connector, you may be able to use this program as is.
