@@ -59,7 +59,7 @@ void setup() {
   lcd.clear();
   lcd.print("Start kwp71scan");
   
-  delay(5000);
+  delay(500);
 
   pinMode(K_TX, OUTPUT);
   pinMode(K_RX, INPUT);
@@ -113,6 +113,7 @@ void loop() {
     delay(20);
     lcd.setCursor(0, 1);
     lcd.print("DTC: 0  NO ERROR");
+/*    
     delay(1000);
     lcd.setCursor(0, 1);
     lcd.print("                ");
@@ -126,6 +127,7 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print("DTC: 0  NO ERROR");
     delay(1000);
+*/
     initialized = false;
     clear_lcd = false;
   }
@@ -159,11 +161,15 @@ bool rcv_block(byte * b) {
 
   // In kw-71, the first byte of block data is the number of data bytes
   bsize = read_byte();
+  if (bsize == -1 ) return false;
+  
   delay(WAIT);
   send_byte( bsize ^ 0xFF );  //return byte
 
   for (byte i = 0; i < bsize; i++) {
     b[i] = read_byte();
+
+    if (bsize == -1 ) return false; // abort
 
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
@@ -224,7 +230,6 @@ int read_byte() {
     delay(1);
     t++;
   }
-  //TODO return -1の場合は処理を止めるのを入れたほうが良いかも。
   return b;
 }
 
