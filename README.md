@@ -1,3 +1,5 @@
+![main](https://github.com/kaihara/kwp71scan/workflows/main/badge.svg?branch=master)
+
 ## :construction: Currently under development. :construction:
 I'm investigating the kind of RAM read of KWP71. I am in trouble because I cannot find good information.  
 At present, battery voltage and engine coolant temperature can be obtained from the ADC channel.  
