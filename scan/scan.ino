@@ -1,4 +1,4 @@
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 
 /*
   note:
@@ -47,16 +47,18 @@ const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};   // ( (-0.000014482 * pow(data[
 const byte BATTERY[] = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
 
 /* LCD Setting */
-LiquidCrystal lcd( 4, 6, 9, 10, 11, 12 );
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
 byte gr_counter = 1;  //Group Reading
 
 void setup() {
-  lcd.begin( 16, 2 );
+  lcd.init();
+  lcd.backlight();
+
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Starting");
+  lcd.print("Start kwp71scan");
+  
   delay(5000);
 
   pinMode(K_TX, OUTPUT);
@@ -73,7 +75,6 @@ void setup() {
 
   //LCD print
   lcd.clear();
-  lcd.setCursor(0, 0);
   lcd.print("Initializing");
 }
 
@@ -90,8 +91,7 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-    //TODO 4つのzoneにわけてデータを表示する。
-    //TODO 通信が途絶した場合は、INITからやり直す
+    // 通信が途絶した場合は、INITからやり直す
     //battery v
     lcd.setCursor(0, 0);
     if ( rcv_info(BATTERY) == false ) {
