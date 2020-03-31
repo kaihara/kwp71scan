@@ -41,11 +41,11 @@ const byte EOM = 0x03;      // byte of block end.
 
 /* Parameters for obtaining vehicle information */
 /* { Length , Parameters } */
-const byte ACK[] = { 1, 0x09};
-const byte ADC_BATTERY[] = { 2, 0x08, 0x01};      // ( data[3] * 0.0681 + 0.0019 , 1)
-const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};   // ( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1)
-const byte BATTERY[] = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
-const byte ENGIN_SPEED[] = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[2] * data[3] + 40 , 0)
+const byte ACK[]            = { 1, 0x09};
+const byte ADC_BATTERY[]    = { 2, 0x08, 0x01};             // ( data[3] * 0.0681 + 0.0019 , 1)
+const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1)
+const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
+const byte ENGINE_SPEED[]   = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[2] * data[3] + 40 , 0)
 
 /* LCD Setting */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -109,7 +109,7 @@ void loop() {
     delay(20);
 
     lcd.setCursor(0, 1);
-    if ( rcv_info(ENGIN_SPEED) == false ) {
+    if ( rcv_info(ENGINE_SPEED) == false ) {
       initialized = false;
       lcd.print("ERROR");
     } else {
