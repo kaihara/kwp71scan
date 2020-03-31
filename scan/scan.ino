@@ -33,7 +33,7 @@ const int K_TX = 1;
 boolean initialized = false;  // 5baud init status
 boolean clear_lcd = false;    // if cause exception then clear LCD
 byte bc = 1;                   // block counter
-byte data[15] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte data[30] = {};
 
 const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out(ms)
@@ -46,6 +46,7 @@ const byte ADC_BATTERY[]    = { 2, 0x08, 0x01};             // ( data[3] * 0.068
 const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1)
 const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
 const byte ENGINE_SPEED[]   = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[2] * data[3] + 40 , 0)
+const byte DTC[]            = { 1, 0x07};
 
 /* LCD Setting */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -56,7 +57,6 @@ void setup() {
   lcd.init();
   lcd.backlight();
   lcd.clear();
-  lcd.print("Start kwp71scan");
   
   pinMode(K_TX, OUTPUT);
   pinMode(K_RX, INPUT);
@@ -87,7 +87,6 @@ void loop() {
 
   //Get information
   if (initialized == true) {
-    // 通信が途絶した場合は、INITからやり直す
     //battery v
     lcd.setCursor(0, 0);
     if ( rcv_info(BATTERY) == false ) {
@@ -98,6 +97,7 @@ void loop() {
       lcd.print( data[2] * 0.0681 + 0.0019 , 1);
     }
     delay(20);
+
     lcd.setCursor(8, 0);
     if ( rcv_info(ADC_WATER_TEMP) == false ) {
       initialized = false;
@@ -118,7 +118,7 @@ void loop() {
     }
     delay(20);
 
-    lcd.setCursor(8, 1);
+    lcd.setCursor(9, 1);
     lcd.print("DTC: 0");
     delay(20);
 
@@ -146,8 +146,8 @@ bool rcv_info(byte * para) {
 
 // Recieve block data.
 bool rcv_block(byte * b) {
-  byte bsize = 0x00;  //block data size
-  byte t = 0;
+  byte bsize = 0;  //block data size
+  byte t = 0; // time out checker.
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
     delay(1);
     t++;
@@ -163,7 +163,7 @@ bool rcv_block(byte * b) {
   for (byte i = 0; i < bsize; i++) {
     b[i] = read_byte();
 
-    if (bsize == -1 ) return false; // abort
+    if (b[i] == -1 ) return false; // abort
 
     //03 = last は返信しない
     if ( i != (bsize - 1) ) {
