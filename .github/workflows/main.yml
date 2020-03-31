@@ -23,6 +23,7 @@ jobs:
        with:
          board: "arduino:avr:leonardo"
          sketchDirectory: "scan"
+         libraries: "scan/libraries"
 
 
 
