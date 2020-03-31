@@ -57,7 +57,7 @@ void setup() {
   lcd.init();
   lcd.backlight();
   lcd.clear();
-  
+
   pinMode(K_TX, OUTPUT);
   pinMode(K_RX, INPUT);
 
@@ -119,7 +119,8 @@ void loop() {
     delay(20);
 
     lcd.setCursor(9, 1);
-    lcd.print("DTC: 0");
+    lcd.print("DTC: ");
+    lcd.print(get_dtc_count());
     delay(20);
 
     initialized = true;
@@ -144,6 +145,25 @@ bool rcv_info(byte * para) {
   return false;
 }
 
+byte get_dtc_count() {
+  byte c = 0;
+  if ( rcv_info(DTC) == false ) {
+    c = 255;
+  } else {
+    if (data[0] == 6) {
+      if (data[3] == 0xff && data[4] == 0xff) {
+        c = 0;
+      } else {
+        c = 1;
+      }
+    } else {
+      c = (data[0] - 3) / 3;
+    }
+  }
+  return c;
+}
+
+
 // Recieve block data.
 bool rcv_block(byte * b) {
   byte t = 0; // time out checker.
@@ -155,7 +175,7 @@ bool rcv_block(byte * b) {
   // In kw-71, the first byte of block data is the number of data bytes
   b[0] = read_byte(); // data block size
   if (b[0] == -1 ) return false;
-  
+
   delay(WAIT);
   send_byte( b[0] ^ 0xFF );  //return byte
 
