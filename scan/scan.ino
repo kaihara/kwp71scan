@@ -42,10 +42,10 @@ const byte EOM = 0x03;      // byte of block end.
 /* Parameters for obtaining vehicle information */
 /* { Length , Parameters } */
 const byte ACK[]            = { 1, 0x09};
-const byte ADC_BATTERY[]    = { 2, 0x08, 0x01};             // ( data[3] * 0.0681 + 0.0019 , 1)
-const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1)
-const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[2] * 0.0681 + 0.0019 , 1)
-const byte ENGINE_SPEED[]   = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[2] * data[3] + 40 , 0)
+const byte ADC_BATTERY[]    = { 2, 0x08, 0x01};             // ( data[4] * 0.0681 + 0.0019 , 1)
+const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[4], 3) + 0.006319247 * pow(data[4], 2) - 1.35140625 * data[4] + 144.4095455), 1)
+const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[3] * 0.0681 + 0.0019 , 1)
+const byte ENGINE_SPEED[]   = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[3] * data[4] + 40 , 0)
 const byte DTC[]            = { 1, 0x07};
 
 /* LCD Setting */
@@ -94,7 +94,7 @@ void loop() {
       lcd.print("ERROR");
     } else {
       lcd.print("BA ");
-      lcd.print( data[2] * 0.0681 + 0.0019 , 1);
+      lcd.print( data[3] * 0.0681 + 0.0019 , 1);
     }
     delay(20);
 
@@ -104,7 +104,7 @@ void loop() {
       lcd.print("ERROR");
     } else {
       lcd.print("WT ");
-      lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
+      lcd.print( (-0.000014482 * pow(data[4], 3) + 0.006319247 * pow(data[4], 2) - 1.35140625 * data[4] + 144.4095455), 1);
     }
     delay(20);
 
@@ -114,7 +114,7 @@ void loop() {
       lcd.print("ERROR");
     } else {
       lcd.print("rpm ");
-      lcd.print( data[2] * data[3] * 40);
+      lcd.print( data[3] * data[4] * 40);
     }
     delay(20);
 
@@ -146,7 +146,6 @@ bool rcv_info(byte * para) {
 
 // Recieve block data.
 bool rcv_block(byte * b) {
-  byte bsize = 0;  //block data size
   byte t = 0; // time out checker.
   while (t != TIME_OUT  && (Serial.available() == 0)) {  //wait data
     delay(1);
@@ -154,26 +153,26 @@ bool rcv_block(byte * b) {
   }
 
   // In kw-71, the first byte of block data is the number of data bytes
-  bsize = read_byte();
-  if (bsize == -1 ) return false;
+  b[0] = read_byte(); // data block size
+  if (b[0] == -1 ) return false;
   
   delay(WAIT);
-  send_byte( bsize ^ 0xFF );  //return byte
+  send_byte( b[0] ^ 0xFF );  //return byte
 
-  for (byte i = 0; i < bsize; i++) {
+  for (byte i = 1; i <= b[0]; i++) {
     b[i] = read_byte();
 
     if (b[i] == -1 ) return false; // abort
 
     //03 = last は返信しない
-    if ( i != (bsize - 1) ) {
+    if ( i != b[0] ) {
       send_byte( b[i] ^ 0xFF );
     }
   }
 
   // When receiving 03 at the end, block reception is regarded as normal end
-  if ( b[(bsize - 1)] == EOM ) {
-    bc = b[0];
+  if ( b[(b[0])] == EOM ) {
+    bc = b[1];
     return true;
   }
   return false;
@@ -238,7 +237,6 @@ void send_byte(byte b) {
 bool kw_init() {
   int b = 0;
   byte kw1, kw2, kw3, kw4, kw5;
-  byte data[15];
 
   clear_buffer();
 
