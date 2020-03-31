@@ -74,6 +74,12 @@ jobs:
           hardware:
             description: 'Directory containing Arduino platforms'
             default: 'hardware'
+        runs:
+            using: 'docker'
+            image: 'Dockerfile'
+        branding:
+            icon: 'server'  
+            color: 'blue'
 
       # Finally, we compile the sketch, using the FQBN that was set
       # in the build matrix.
