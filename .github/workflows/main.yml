@@ -54,7 +54,27 @@ jobs:
           arduino-cli core update-index
           arduino-cli core install ${{ matrix.arduino-platform }}
           arduino-cli lib install LiquidCrystal_I2C
-          
+
+      - name: 'Run arduino-builder'
+        inputs: 
+          sketch:
+            description: 'Path to a single sketch'
+            required: false
+          sketchDirectory:
+            description: 'Directory in which to search for sketches'
+            default: 'scan'
+          board:
+            description: 'Fully Qualified Board Name'
+            default: 'arduino:avr:uno'
+          libraries:
+            description: |
+                         Directory containing Arduino libraries.
+                         Use this directory to install required 3rd-party libraries.
+            default: 'libraries'
+          hardware:
+            description: 'Directory containing Arduino platforms'
+            default: 'hardware'
+
       # Finally, we compile the sketch, using the FQBN that was set
       # in the build matrix.
       - name: Compile Sketch
