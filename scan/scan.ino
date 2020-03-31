@@ -50,23 +50,18 @@ const byte ENGIN_SPEED[] = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[2] * data[3] 
 /* LCD Setting */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-
-byte gr_counter = 1;  //Group Reading
-
 void setup() {
+  delay(1000);
+
   lcd.init();
   lcd.backlight();
-
   lcd.clear();
   lcd.print("Start kwp71scan");
   
-  delay(500);
-
   pinMode(K_TX, OUTPUT);
   pinMode(K_RX, INPUT);
 
   Serial.begin(4800);
-  Serial.setTimeout(50);
 
   //clear rx buffer
   clear_buffer();
@@ -112,15 +107,13 @@ void loop() {
       lcd.print( (-0.000014482 * pow(data[3], 3) + 0.006319247 * pow(data[3], 2) - 1.35140625 * data[3] + 144.4095455), 1);
     }
     delay(20);
-//    lcd.setCursor(0, 1);
-//    lcd.print("DTC: 0  NO ERROR");
 
     lcd.setCursor(0, 1);
     if ( rcv_info(ENGIN_SPEED) == false ) {
       initialized = false;
       lcd.print("ERROR");
     } else {
-      lcd.print("PPM ");
+      lcd.print("rpm ");
       lcd.print( data[2] * data[3] * 40);
     }
     delay(20);
@@ -186,8 +179,8 @@ bool rcv_block(byte * b) {
   return false;
 }
 
-bool send_block(byte * p) {
 
+bool send_block(byte * p) {
   send_byte(p[0] + 2);
   if (read_byte() == -1) return false;
 
