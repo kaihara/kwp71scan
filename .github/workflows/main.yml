@@ -21,7 +21,7 @@ jobs:
      - name: Build all example sketches
        uses: Legion2/arduino-builder-action@v2.0.0
        with:
-         board: "arduino:samd:nano_33_iot"
+         board: "arduino:avr:leonardo"
          sketchDirectory: "scan"
 
 
