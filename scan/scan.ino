@@ -20,6 +20,40 @@
   Vehicle speed
   unknown
 
+  DTC Code List
+  0x01  Control unit faulty
+  0x02  Idle actuator closing winding
+  0x03  Petrol pump relay
+  0x04  Idle actuator opening winding
+  0x05  Rpm sensor
+  0x07  Air flow meter
+  0x08  Phase sensor
+  0x09  Vehicle speed sensor
+  0x0A  Lambda sensor integrator
+  0x0C  Throttle potentiometer
+  0x0D  Torque reduction
+  0x0F  Failure warning lamp / Line to Infocenter
+  0x12  Connection with ABS
+  0x13  Torque reduction 2
+  0x14  Automatic transmission input
+  0x15  Conditioner control
+  0x1A  Permanent power supply
+  0x1C  Lambda sensor
+  0x22  Evaporation control valve
+  0x25  Battery voltage
+  0x2C  Air temperature sensor
+  0x2D  Water temperature sensor
+  0x2F  EGR
+  0x55  Conditioner input
+  0x64  Final power drivers 1
+  0x65  Final power drivers 2
+  0x80  Knock sensor 1
+  0x81  Knock sensor 2
+  0x8F  Knock measuring circuit
+  0xC8  Electronic key
+  0xCA  Error memory
+  0xE1  Injector 1
+
 */
 
 /* Setting parameter */
@@ -157,7 +191,7 @@ byte get_dtc_count() {
         c = 1;
       }
     } else {
-      c = (data[0] - 3) / 3;
+      c = (data[0] - 3) / 5;  // kwp71 DTC data unit size = 5. kwp1281 = 3?
     }
   }
   return c;
