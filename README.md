@@ -10,7 +10,7 @@ Wanted information
  - [X] Battery voltage  
  - [ ] Engine coolant temperature
  - [ ] Engine oil pressure  
- - [ ] Engine RPM  
+ - [X] Engine RPM  
  - [ ] Vehicle speed  
  - [ ] Engine load  
   
@@ -24,11 +24,11 @@ Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155.
  ***Prototype production***  
  - [X] Get ECU / Immo unit.  
  - [X] Make ECU workbench.  
- - [ ] Prototype production.  
+ - [X] Prototype production.  
    - [X] Creating a prototype board.  
    - [X] Let Arduino and ECU communicate.  
-   - [ ] Get information from ECU.  
-   - [ ] Creating an in-vehicle prototype board.  
+   - [X] Get information from ECU.  
+   - [X] Creating an in-vehicle prototype board.  
  - [ ] In-vehicle prototype testing.  
   
 ***Trial production***   
