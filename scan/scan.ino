@@ -125,7 +125,9 @@ void loop() {
     lcd.setCursor(0, 0);
     if ( rcv_info(BATTERY) == false ) {
       initialized = false;
+      clear_lcd = true;
       lcd.print("ERROR");
+      return;
     } else {
       lcd.print("BA ");
       lcd.print( data[3] * 0.0681 + 0.0019 , 1);
@@ -135,7 +137,9 @@ void loop() {
     lcd.setCursor(8, 0);
     if ( rcv_info(ADC_WATER_TEMP) == false ) {
       initialized = false;
+      clear_lcd = true;
       lcd.print("ERROR");
+      return;
     } else {
       lcd.print("WT ");
       lcd.print( (-0.000014482 * pow(data[4], 3) + 0.006319247 * pow(data[4], 2) - 1.35140625 * data[4] + 144.4095455), 1);
@@ -145,7 +149,9 @@ void loop() {
     lcd.setCursor(0, 1);
     if ( rcv_info(ENGINE_SPEED) == false ) {
       initialized = false;
+      clear_lcd = true;
       lcd.print("ERROR");
+      return;
     } else {
       lcd.print("rpm ");
       lcd.print( data[3] * data[4] * 40);
@@ -157,7 +163,6 @@ void loop() {
     lcd.print(get_dtc_count());
     delay(20);
 
-    initialized = true;
     clear_lcd = false;
   }
 
