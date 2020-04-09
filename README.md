@@ -29,7 +29,7 @@ Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155.
    - [X] Let Arduino and ECU communicate.  
    - [X] Get information from ECU.  
    - [X] Creating an in-vehicle prototype board.  
- - [ ] In-vehicle prototype testing.  
+ - [ ] In-vehicle prototype testing. - in progress -  
   
 ***Trial production***   
 -  [ ] PCB board design.  
