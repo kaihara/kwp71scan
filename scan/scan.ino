@@ -154,7 +154,7 @@ void loop() {
       return;
     } else {
       lcd.print("rpm ");
-      lcd.print( data[3] * data[4] * 40);
+      lcd.print( data[3] * data[4] * 40 );
     }
     delay(20);
 
