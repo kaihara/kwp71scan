@@ -1,6 +1,15 @@
 ![main](https://github.com/kaihara/kwp71scan/workflows/main/badge.svg?branch=master)
 
 ## :construction: Currently under development. :construction:
+
+In-vehicle prototype testing. - in progress -  
+
+- The coolant temperature, battery voltage, and DTC count were acquired correctly.  
+**problem**
+- Insufficient power supply to Arduino
+- Idling became unstable
+- Could not get engine speed data
+
 I'm investigating the kind of RAM read of KWP71. I am in trouble because I cannot find good information.  
 At present, battery voltage and engine coolant temperature can be obtained from the ADC channel.  
   
@@ -8,9 +17,9 @@ Wanted information
  - [X] Battery voltage[ADC]  
  - [X] Engine coolant temperature[ADC]
  - [X] Battery voltage  
- - [ ] Engine coolant temperature
+ - [X] Engine coolant temperature
  - [ ] Engine oil pressure  
- - [X] Engine RPM  
+ - [ ] Engine RPM  
  - [ ] Vehicle speed  
  - [ ] Engine load  
   
@@ -30,7 +39,7 @@ Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155.
    - [X] Get information from ECU.  
    - [X] Creating an in-vehicle prototype board.  
  - [ ] In-vehicle prototype testing. - in progress -  
-  
+    
 ***Trial production***   
 -  [ ] PCB board design.  
 -  [ ] Create Trial production.  
