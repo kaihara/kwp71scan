@@ -2,14 +2,14 @@
 
 ## :construction: Currently under development. :construction:
 
-In-vehicle prototype testing. - in progress -  
-
+1.in progress / In-vehicle prototype testing  
 - The coolant temperature, battery voltage, and DTC count were acquired correctly.  
 **problem**
 - Insufficient power supply to Arduino
 - Idling became unstable
 - Could not get engine speed data
 
+2.Wanted information  
 I'm investigating the kind of RAM read of KWP71. I am in trouble because I cannot find good information.  
 At present, battery voltage and engine coolant temperature can be obtained from the ADC channel.  
   
@@ -17,7 +17,7 @@ Wanted information
  - [X] Battery voltage[ADC]  
  - [X] Engine coolant temperature[ADC]
  - [X] Battery voltage  
- - [X] Engine coolant temperature
+ - [ ] Engine coolant temperature
  - [ ] Engine oil pressure  
  - [ ] Engine RPM  
  - [ ] Vehicle speed  
