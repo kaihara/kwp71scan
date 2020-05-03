@@ -2,6 +2,13 @@
 
 ## :construction: Currently under development. :construction:
 
+
+# kwp71scan
+Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.  
+
+<img width="366" alt="Finished product image" src="https://user-images.githubusercontent.com/3794315/76039639-5db08400-5f90-11ea-8f99-b0416358e8c2.PNG">  
+(Image of finished product)
+
 1.in progress / In-vehicle prototype testing  
 - The coolant temperature, battery voltage, and DTC count were acquired correctly.  
 **problem**
@@ -23,11 +30,7 @@ Wanted information
  - [ ] Vehicle speed  
  - [ ] Engine load  
   
-# kwp71scan
-Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.  
 
-<img width="366" alt="Finished product image" src="https://user-images.githubusercontent.com/3794315/76039639-5db08400-5f90-11ea-8f99-b0416358e8c2.PNG">  
-(Image of finished product)
 
 # Progress
  ***Prototype production***  
@@ -59,7 +62,11 @@ If you have a 90s Motronic ecu vehicle with a Fiat / Alfa 3pin diagnostic connec
 Protocols before OBD2 may have their own implementations, and it is not known exactly whether kwp71 will work unless tested on a real device.  
   
 I don't have the environment to test other models. So I don't currently intend to import code for other vehicles. First, I completed a scanner for my car ;-) sorry..  
-  
+
+
+# Other information
+See the [Wiki](https://github.com/kaihara/kwp71scan/wiki) for information such as schematics.
+
 With safe driving!!  
 
 
