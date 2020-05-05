@@ -82,7 +82,7 @@ const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 *
 const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[3] * 0.0681 + 0.0019 , 1)
 const byte ENGINE_SPEED[]   = { 4, 0x01, 0x02, 0x00, 0x3b}; // ( 0.2 * data[3] * data[4], 0)
 const byte DTC[]            = { 1, 0x07};
-06 6E 01 02 00 3B 03
+
 /* LCD Setting */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
