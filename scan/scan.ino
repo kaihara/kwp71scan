@@ -71,17 +71,18 @@ byte data[30] = {};
 
 const byte WAIT = 8;        // wait time.Waiting time settings may need to be fine-tuned for each model.
 const int TIME_OUT = 1000;  // loop time out(ms)
-const byte EOM = 0x03;      // byte of block end.
+const byte EOB = 0x03;      // byte of block end.
+
 
 /* Parameters for obtaining vehicle information */
-/* { Length , Parameters } */
+/* { Length , Parameters(without block counter and End of Block.) } */
 const byte ACK[]            = { 1, 0x09};
 const byte ADC_BATTERY[]    = { 2, 0x08, 0x01};             // ( data[4] * 0.0681 + 0.0019 , 1)
 const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[4], 3) + 0.006319247 * pow(data[4], 2) - 1.35140625 * data[4] + 144.4095455), 1)
 const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[3] * 0.0681 + 0.0019 , 1)
-const byte ENGINE_SPEED[]   = { 4, 0x01, 0x01, 0x00, 0x3a}; // ( data[3] * data[4] + 40 , 0)
+const byte ENGINE_SPEED[]   = { 4, 0x01, 0x02, 0x00, 0x3b}; // ( 0.2 * data[3] * data[4], 0)
 const byte DTC[]            = { 1, 0x07};
-
+06 6E 01 02 00 3B 03
 /* LCD Setting */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -154,7 +155,7 @@ void loop() {
       return;
     } else {
       lcd.print("rpm ");
-      lcd.print( data[3] * data[4] * 40 );
+      lcd.print( 0.2 * data[3] * data[4] );
     }
     delay(20);
 
@@ -223,14 +224,14 @@ bool rcv_block(byte * b) {
 
     if (b[i] == -1 ) return false; // abort
 
-    //03 = last は返信しない
+    //03 = end of block. Do not reply at the end.
     if ( i != b[0] ) {
       send_byte( b[i] ^ 0xFF );
     }
   }
 
   // When receiving 03 at the end, block reception is regarded as normal end
-  if ( b[(b[0])] == EOM ) {
+  if ( b[(b[0])] == EOB ) {
     bc = b[1];
     return true;
   }
@@ -249,7 +250,7 @@ bool send_block(byte * p) {
     send_byte( p[ i + 1 ] );
     if (read_byte() == -1) return false;
   }
-  send_byte( EOM );
+  send_byte( EOB );
   return true;
 }
 
