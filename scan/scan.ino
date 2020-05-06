@@ -86,7 +86,7 @@ const byte WATER_TEMP_ADC[]     = { 2, 0x08, 0x03};             // ( (-0.0000144
 const byte LAMBDA_SENSOR_ADC[]  = { 2, 0x08, 0x05};             // unknown
 const byte BATTERY[]            = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[3] * 0.0681 + 0.0019 , 1)
 const byte ENGINE_SPEED[]       = { 4, 0x01, 0x02, 0x00, 0x3b}; // ( 0.2 * data[3] * data[4], 0) or 40 * data[3]
-const byte VEHICLE_SPEED[]      = { 4, 0x01, 0x01, 0x00, 0xA4}; // unknown
+const byte VEHICLE_SPEED[]      = { 4, 0x01, 0x01, 0x00, 0xA4}; // (0.01 * a * b , 1) ???
 const byte DTC[]                = { 1, 0x07};
 
 
@@ -178,8 +178,19 @@ void loop() {
       lcd.print( ( (-0.0000201389 * pow(data[4], 3) + 0.008784722 * pow(data[4], 2) - 1.676875 * data[4] + 156.74375 ), 1) );
     }
     delay(20);
- 
 
+    lcd.setCursor(0, 1);
+    if ( rcv_info(VEHICLE_SPEED) == false ) {
+      initialized = false;
+      clear_lcd = true;
+      lcd.print("ERROR");
+      return;
+    } else {
+      lcd.print("km ");
+      lcd.print( ( 0.01 * data[4] * data[5] , 1) );
+    }
+    delay(20);
+    
     lcd.setCursor(9, 1);
     lcd.print("DTC: ");
     lcd.print(get_dtc_count());
