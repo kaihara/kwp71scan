@@ -2,23 +2,25 @@
 
 /*
   note:
-  Engine speed
-  0x01, 0x3a,"Engine speed", 1,"RPM", 1, "#scaling unsigned 1 x*40 1/min";
+  Engine speed(rpm)
+  0x06, 0x**, 0x01, 0x02, 0x00, 0x3b, 0x03 "Engine speed", 1,"RPM", 1, "#scaling unsigned 1 x*40 1/min";
 
-  Engine Temperature
-  0x08, 0x03,"ADC 3 Water temperature", 1,"Water temperature", 1, "#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
+  Engine Temperature(°C) ADC
+  0x04, 0x**, 0x08, 0x03, 0x03 "ADC 3 Water temperature", 1,"Water temperature", 1, "#scaling unsigned 2 -0.000014482*(X**3)+0.006319247*(X**2)-1.35140625*X+144.4095455 Deg./C";
 
-  Air temperature
-  0x08, 0x02,"ADC_2 airtemp sensor voltage", 1,"Tair sensor",  1,"#scaling unsigned 2 -2.01389E-05*(x**3)+0.008784722*(x**2)-1.676875*x+156.74375 Deg./C";
+  Air temperature(°C) ADC
+  0x04, 0x**, 0x08, 0x02, 0x03 "ADC 2 airtemp sensor voltage", 1,"airtemp sensor", 1,"#scaling unsigned 2 -2.01389E-05*(x**3)+0.008784722*(x**2)-1.676875*x+156.74375 Deg./C";
 
-  Air quantity
-  unknown
+  Air quantity(kg/h)
+  0x06, 0x**, 0x01, 0x02, 0x00, 0xB3, 0x03 -> 05 ** FE 00 00 03
 
-  Battery voltage
-  0x08, 0x01,"ADC 1 Battery Voltage", 1,"Battery voltage", 1, "#scaling unsigned 2 X/14.68 Volt";
+  Battery voltage(V) ADC
+  0x04, 0x**, 0x08, 0x01, 0x03 "ADC 1 Battery Voltage", 1,"Battery voltage", 1, "#scaling unsigned 2 X/14.68 Volt";
 
-  Vehicle speed
-  unknown
+  Vehicle speed(km/h)
+  0x06, 0x**, 0x08, 0x01, 0x03
+  06 4A 01 01 00 A4 03  04 4B FE 00 03
+  
 
   DTC Code List
   0x01  Control unit faulty
@@ -76,13 +78,18 @@ const byte EOB = 0x03;      // byte of block end.
 
 /* Parameters for obtaining vehicle information */
 /* { Length , Parameters(without block counter and End of Block.) } */
-const byte ACK[]            = { 1, 0x09};
-const byte ADC_BATTERY[]    = { 2, 0x08, 0x01};             // ( data[4] * 0.0681 + 0.0019 , 1)
-const byte ADC_WATER_TEMP[] = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[4], 3) + 0.006319247 * pow(data[4], 2) - 1.35140625 * data[4] + 144.4095455), 1)
-const byte BATTERY[]        = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[3] * 0.0681 + 0.0019 , 1)
-const byte ENGINE_SPEED[]   = { 4, 0x01, 0x02, 0x00, 0x3b}; // ( 0.2 * data[3] * data[4], 0)
-const byte DTC[]            = { 1, 0x07};
-06 6E 01 02 00 3B 03
+const byte ACK[]                = { 1, 0x09};
+const byte AIRFLOW_SENSOR_ADC[] = { 2, 0x08, 0x00};             // unknown
+const byte BATTERY_ADC[]        = { 2, 0x08, 0x01};             // ( data[4] * 0.0681 + 0.0019 , 1)
+const byte AIR_TEMP_ADC[]       = { 2, 0x08, 0x02};             // ( (-0.0000201389 * pow(data[4], 3) + 0.008784722 * pow(data[4], 2) - 1.676875 * data[4] + 156.74375 ), 1)
+const byte WATER_TEMP_ADC[]     = { 2, 0x08, 0x03};             // ( (-0.000014482 * pow(data[4], 3) + 0.006319247 * pow(data[4], 2) - 1.35140625 * data[4] + 144.4095455 ), 1)
+const byte LAMBDA_SENSOR_ADC[]  = { 2, 0x08, 0x05};             // unknown
+const byte BATTERY[]            = { 4, 0x01, 0x01, 0x00, 0x36}; // ( data[3] * 0.0681 + 0.0019 , 1)
+const byte ENGINE_SPEED[]       = { 4, 0x01, 0x02, 0x00, 0x3b}; // ( 0.2 * data[3] * data[4], 0) or 40 * data[3]
+const byte VEHICLE_SPEED[]      = { 4, 0x01, 0x01, 0x00, 0xA4}; // unknown
+const byte DTC[]                = { 1, 0x07};
+
+
 /* LCD Setting */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -136,7 +143,7 @@ void loop() {
     delay(20);
 
     lcd.setCursor(8, 0);
-    if ( rcv_info(ADC_WATER_TEMP) == false ) {
+    if ( rcv_info(WATER_TEMP_ADC) == false ) {
       initialized = false;
       clear_lcd = true;
       lcd.print("ERROR");
@@ -155,9 +162,23 @@ void loop() {
       return;
     } else {
       lcd.print("rpm ");
-      lcd.print( 0.2 * data[3] * data[4] );
+      // lcd.print( 0.2 * data[3] * data[4] );
+      lcd.print( 40 * data[3] );
     }
     delay(20);
+
+    lcd.setCursor(0, 1);
+    if ( rcv_info(AIR_TEMP_ADC) == false ) {
+      initialized = false;
+      clear_lcd = true;
+      lcd.print("ERROR");
+      return;
+    } else {
+      lcd.print("AT ");
+      lcd.print( ( (-0.0000201389 * pow(data[4], 3) + 0.008784722 * pow(data[4], 2) - 1.676875 * data[4] + 156.74375 ), 1) );
+    }
+    delay(20);
+ 
 
     lcd.setCursor(9, 1);
     lcd.print("DTC: ");
