@@ -2,6 +2,7 @@
 
 ## :construction: Currently under development. :construction:
 
+I had a short break, but development will resume soon. (09/09/2020)
 
 # kwp71scan
 Car scan tool using kwp71(key word protcol 71).I'm making it for Alfa Romeo 155. For now.  
